@@ -11,10 +11,6 @@
 // GASで「ウェブアプリとして導入」で取得したURLをここに設定
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwgTpNo5BEB7Y-ys6OcQVCHXw5Cuxyl_uGd2FQUH0w7ic0-u7-d6tH_shg7xOm9VNQ/exec';
 
-// ホスティングのベースURL（末尾にスラッシュ不要）
-// GitHub PagesやNetlifyなどの静的ホスティングURL
-const HOSTING_BASE_URL = 'https://your-username.github.io/quiz-app';
-
 // ========================================
 // ジャンル設定
 // ========================================
@@ -33,54 +29,46 @@ const GENRE_NAMES = [
 const LEVEL_NAMES = ['初級', '中級', '上級'];
 
 // ========================================
-// 画像URL設定
+// 画像URL設定（相対パス）
 // ========================================
-
-// 共通画像
-const IMAGE_URLS = {
-  // Favicon
-  favicon: HOSTING_BASE_URL + '/imgs/favicon.svg',
-
-  // OGP画像
-  ogpImage: HOSTING_BASE_URL + '/imgs/ogp-image.png'
-};
 
 // 合格証明書背景画像URLマッピング
 // Key: "ジャンル番号-級番号" (例: "1-1"は ジャンル1の初級, "1-4"は ジャンル1の超級)
+// ※ genres/genreX/ からの相対パス
 const CERTIFICATE_BG_IMAGE_MAP = {
   // ジャンル1
-  '1-1': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_1-1.jpg',
-  '1-2': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_1-2.jpg',
-  '1-3': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_1-3.jpg',
-  '1-4': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_1-3.jpg', // 超級
+  '1-1': '../../imgs/frame_hyousyoujyou_1-1.jpg',
+  '1-2': '../../imgs/frame_hyousyoujyou_1-2.jpg',
+  '1-3': '../../imgs/frame_hyousyoujyou_1-3.jpg',
+  '1-4': '../../imgs/frame_hyousyoujyou_1-3.jpg', // 超級
   // ジャンル2
-  '2-1': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_2-1.jpg',
-  '2-2': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_2-2.jpg',
-  '2-3': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_2-3.jpg',
-  '2-4': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_2-3.jpg', // 超級
+  '2-1': '../../imgs/frame_hyousyoujyou_2-1.jpg',
+  '2-2': '../../imgs/frame_hyousyoujyou_2-2.jpg',
+  '2-3': '../../imgs/frame_hyousyoujyou_2-3.jpg',
+  '2-4': '../../imgs/frame_hyousyoujyou_2-3.jpg', // 超級
   // ジャンル3
-  '3-1': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_3-1.jpg',
-  '3-2': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_3-2.jpg',
-  '3-3': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_3-3.jpg',
-  '3-4': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_3-3.jpg', // 超級
+  '3-1': '../../imgs/frame_hyousyoujyou_3-1.jpg',
+  '3-2': '../../imgs/frame_hyousyoujyou_3-2.jpg',
+  '3-3': '../../imgs/frame_hyousyoujyou_3-3.jpg',
+  '3-4': '../../imgs/frame_hyousyoujyou_3-3.jpg', // 超級
   // ジャンル4
-  '4-1': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_4-1.jpg',
-  '4-2': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_4-2.jpg',
-  '4-3': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_4-3.jpg',
-  '4-4': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_4-3.jpg', // 超級
+  '4-1': '../../imgs/frame_hyousyoujyou_4-1.jpg',
+  '4-2': '../../imgs/frame_hyousyoujyou_4-2.jpg',
+  '4-3': '../../imgs/frame_hyousyoujyou_4-3.jpg',
+  '4-4': '../../imgs/frame_hyousyoujyou_4-3.jpg', // 超級
   // ジャンル5
-  '5-1': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_5-1.jpg',
-  '5-2': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_5-2.jpg',
-  '5-3': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_5-3.jpg',
-  '5-4': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_5-3.jpg', // 超級
+  '5-1': '../../imgs/frame_hyousyoujyou_5-1.jpg',
+  '5-2': '../../imgs/frame_hyousyoujyou_5-2.jpg',
+  '5-3': '../../imgs/frame_hyousyoujyou_5-3.jpg',
+  '5-4': '../../imgs/frame_hyousyoujyou_5-3.jpg', // 超級
   // ジャンル6
-  '6-1': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_6-1.jpg',
-  '6-2': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_6-2.jpg',
-  '6-3': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_6-3.jpg',
-  '6-4': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_6-3.jpg', // 超級
+  '6-1': '../../imgs/frame_hyousyoujyou_6-1.jpg',
+  '6-2': '../../imgs/frame_hyousyoujyou_6-2.jpg',
+  '6-3': '../../imgs/frame_hyousyoujyou_6-3.jpg',
+  '6-4': '../../imgs/frame_hyousyoujyou_6-3.jpg', // 超級
 
   // 全ジャンル（エクストラステージ）
-  'ALL': HOSTING_BASE_URL + '/imgs/frame_hyousyoujyou_6-3.jpg'
+  'ALL': '../../imgs/frame_hyousyoujyou_6-3.jpg'
 };
 
 // ========================================
@@ -114,4 +102,9 @@ function getCertificateBgImageUrl(genreName, levelName) {
   const levelNum = getLevelNumber(levelName);
   const key = `${genreNum}-${levelNum}`;
   return CERTIFICATE_BG_IMAGE_MAP[key] || CERTIFICATE_BG_IMAGE_MAP['1-1'];
+}
+
+// アプリのトップページURLを取得
+function getAppBaseUrl() {
+  return window.location.origin + window.location.pathname.replace(/\/genres\/.*$/, '/');
 }

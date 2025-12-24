@@ -202,7 +202,7 @@ function openCertificateInNewTab() {
 function shareToX() {
   const levelText = quizResult.level === '超級' ? '超級全問正解' : `${quizResult.level}合格`;
   const text = `クイズアプリで${GENRE_NAME}の${levelText}しました！君も挑戦してみよう！`;
-  const url = HOSTING_BASE_URL;
+  const url = getAppBaseUrl();
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
 
   window.open(twitterUrl, '_blank', 'width=550,height=420');

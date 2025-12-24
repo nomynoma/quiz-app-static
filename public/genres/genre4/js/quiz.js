@@ -463,7 +463,7 @@ function shareFailToX() {
   const total = scoreMatch[2];
 
   const text = `クイズアプリで${GENRE_NAME}の${currentLevel}に挑戦したよ！${score}/${total}問正解！君も挑戦してみよう！`;
-  const url = HOSTING_BASE_URL;
+  const url = getAppBaseUrl();
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
 
   window.open(twitterUrl, '_blank', 'width=550,height=420');
