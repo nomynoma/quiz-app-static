@@ -179,11 +179,6 @@ quiz-app-static/
 const GAS_API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'; // ★GASデプロイURLを入力★
 
 // ========================================
-// ホスティングURL
-// ========================================
-const HOSTING_BASE_URL = 'https://your-username.github.io/quiz-app'; // ★GitHubユーザー名とリポジトリ名を入力★
-
-// ========================================
 // ジャンル名
 // ========================================
 const GENRE_NAMES = [
@@ -195,6 +190,8 @@ const GENRE_NAMES = [
   'データベース'      // ジャンル6
 ];
 ```
+
+**注**: `HOSTING_BASE_URL`は不要です（相対パスとURL自動取得を使用）。
 
 ### 4. 合格証背景画像を配置
 

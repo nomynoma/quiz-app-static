@@ -153,11 +153,6 @@
 const GAS_API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'; // ★GASデプロイURLを入力★
 
 // ========================================
-// ホスティングURL
-// ========================================
-const HOSTING_BASE_URL = 'https://your-username.github.io/quiz-app'; // ★GitHubユーザー名とリポジトリ名を入力★
-
-// ========================================
 // ジャンル名
 // ========================================
 const GENRE_NAMES = [
@@ -169,6 +164,10 @@ const GENRE_NAMES = [
   'データベース'      // ジャンル6
 ];
 ```
+
+**注**: 以前のバージョンにあった `HOSTING_BASE_URL` は不要になりました。
+- 合格証の背景画像は相対パスで読み込みます
+- X共有URLは自動的に現在のページURLから取得します
 
 ### 2. 合格証背景画像を配置
 
@@ -214,19 +213,11 @@ git push -u origin main
 
 1. リポジトリページで「Settings」→「Pages」
 2. Source: **Deploy from a branch**
-3. Branch: **main**, Folder: **/ (root)** または **/public**
-   - `public/` フォルダをルートにする場合は **/public** を選択
+3. Branch: **main**, Folder: **/ (root)**
 4. 「Save」をクリック
-5. 数分後、`https://YOUR_USERNAME.github.io/quiz-app/` でアクセス可能
+5. 数分後、`https://YOUR_USERNAME.github.io/quiz-app/public/` でアクセス可能
 
-#### 3. ベースURLの調整
-
-リポジトリ名が `quiz-app` の場合、ベースURLは:
-```
-https://YOUR_USERNAME.github.io/quiz-app/
-```
-
-`config.js` の `HOSTING_BASE_URL` を上記に設定してください。
+**注**: GitHub Pagesは `/ (root)` を選択し、URLに `/public/` を追加してアクセスしてください。
 
 ### Netlifyを使う場合
 
@@ -286,8 +277,8 @@ https://YOUR_USERNAME.github.io/quiz-app/
 **症状**: ローディング後、「問題の取得に失敗しました」エラー
 
 **原因と対策**:
-- スプレッドシートIDが間違っている → `code.gs` の `SPREADSHEET_ID` を確認
-- シート名が一致していない → シート名が `genre1_初級` など正確か確認
+- GASがスプレッドシートに紐付いていない → スプレッドシートから「拡張機能」→「Apps Script」で開いたか確認
+- シート名が一致していない → シート名が `ジャンル1` など正確か確認
 - データが空 → スプレッドシートに問題データが入力されているか確認
 
 ### 合格証が生成されない
@@ -295,9 +286,9 @@ https://YOUR_USERNAME.github.io/quiz-app/
 **症状**: 合格画面でローディングが終わらない
 
 **原因と対策**:
-- 背景画像のURLが間違っている → `config.js` の `CERTIFICATE_BG_IMAGE_MAP` を確認
+- 背景画像のパスが間違っている → `config.js` の `CERTIFICATE_BG_IMAGE_MAP` を確認（相対パスを使用）
 - 画像ファイルが存在しない → `public/imgs/` に画像があるか確認
-- CORS問題 → 外部URLの画像を使う場合、CORSヘッダーが必要
+- ブラウザコンソールにエラーが出ていないか確認
 
 ### ニックネームが保存されない
 
