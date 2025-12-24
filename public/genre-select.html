@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ジャンル選択 - クイズアプリ</title>
+  <link rel="icon" href="imgs/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- ヘッダーエリア -->
+  <div class="header-wrapper">
+    <div class="header-area">
+      <div class="header-row">
+        <div class="header-left"></div>
+        <div class="header-center"></div>
+        <div class="header-right">
+          <!-- ニックネーム表示エリア -->
+          <div class="nickname-display">
+            <span id="nicknameText"></span>
+            <button id="editNicknameBtn" class="edit-nickname-btn" onclick="editNickname()" title="編集">🖊️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="screen active" id="genreScreen">
+      <h1>📚 ジャンル選択</h1>
+      <p class="description-text">
+        挑戦したいジャンルを選んでください
+      </p>
+
+      <!-- ジャンルボタンはJavaScriptで動的に生成 -->
+      <div id="genreButtons"></div>
+
+      <!-- エクストラステージボタン（全ジャンル上級クリア後に表示） -->
+      <div id="extraStageButton" style="display: none;"></div>
+
+      <!-- ランキングボタン -->
+      <button class="btn btn-ranking" onclick="goToRanking()" style="display: none;" id="rankingButton">
+        🏆 TOP10ランキングを見る
+      </button>
+
+      <!-- リセットボタン -->
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <button class="btn btn-gray" onclick="resetLocalStorage()" style="font-size: 14px; padding: 10px 20px; min-width: auto;">
+          🔄 ローカルデータをリセット
+        </button>
+        <p style="font-size: 12px; color: #999; margin-top: 10px;">
+          ※ニックネーム・合格証・スコアなどの保存データが削除されます
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 合格証モーダル -->
+  <div id="certificateModal" class="certificate-modal" style="display: none;">
+    <div class="certificate-modal-overlay" onclick="closeCertificateModal()"></div>
+    <div class="certificate-modal-content">
+      <button class="certificate-modal-close" onclick="closeCertificateModal()">✕</button>
+      <div class="certificate-modal-body">
+        <h2 id="certificateModalTitle">合格証明書</h2>
+        <div id="certificateModalInfo" class="certificate-info"></div>
+        <img id="certificateModalImage" class="certificate-modal-image" alt="合格証明書">
+      </div>
+      <div class="certificate-modal-buttons">
+        <button class="btn btn-green" onclick="downloadCertificateFromModal()">📥 ダウンロード</button>
+        <button class="btn btn-gray" onclick="closeCertificateModal()">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 共通ライブラリ -->
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/genre-select.js"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クイズアプリ</title>
+  <link rel="icon" href="imgs/favicon.svg" type="image/svg+xml">
+
+  <!-- OGP設定 -->
+  <meta property="og:title" content="クイズアプリ - 6ジャンル・3段階">
+  <meta property="og:description" content="初級・中級・上級の3段階で挑戦！全問正解で合格証明書がもらえるよ！">
+  <meta property="og:image" content="imgs/ogp-image.png">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="クイズアプリ - 6ジャンル・3段階">
+  <meta name="twitter:description" content="初級・中級・上級の3段階で挑戦！全問正解で合格証明書がもらえるよ！">
+  <meta name="twitter:image" content="imgs/ogp-image.png">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .loading-container {
+      text-align: center;
+      color: white;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 4px solid white;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: normal;
+    }
+
+    .error-message {
+      background: white;
+      color: #e74c3c;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-container">
+    <div class="spinner"></div>
+    <h1>クイズアプリを読み込んでいます...</h1>
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+  </div>
+
+  <!-- 設定ファイル読み込み -->
+  <script src="js/config.js"></script>
+  <script>
+    // 初期化処理
+    (function() {
+      // ニックネームの有無をチェック
+      function checkNickname() {
+        try {
+          const nickname = localStorage.getItem(STORAGE_KEYS.NICKNAME);
+          return nickname && nickname.trim() !== '';
+        } catch (e) {
+          console.error('LocalStorage エラー:', e);
+          return false;
+        }
+      }
+
+      // URLパラメータから遷移先を判定
+      function getTargetPage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const page = urlParams.get('page');
+
+        if (page) {
+          return page + '.html' + window.location.search;
+        }
+
+        // ニックネームがあればジャンル選択、なければニックネーム入力
+        return checkNickname() ? 'genre-select.html' : 'nickname.html';
+      }
+
+      // ページ遷移
+      function navigate() {
+        try {
+          const targetPage = getTargetPage();
+          console.log('遷移先:', targetPage);
+          window.location.href = targetPage;
+        } catch (e) {
+          console.error('遷移エラー:', e);
+          showError('ページの読み込みに失敗しました。ブラウザを再読み込みしてください。');
+        }
+      }
+
+      // エラー表示
+      function showError(message) {
+        const errorEl = document.getElementById('errorMessage');
+        if (errorEl) {
+          errorEl.textContent = message;
+          errorEl.style.display = 'block';
+        }
+      }
+
+      // 設定ファイルが読み込まれたか確認
+      if (typeof STORAGE_KEYS === 'undefined') {
+        showError('設定ファイル(config.js)の読み込みに失敗しました。');
+        return;
+      }
+
+      // 少し待ってから遷移（ローディング表示のため）
+      setTimeout(navigate, 500);
+    })();
+  </script>
+</body>
+</html>

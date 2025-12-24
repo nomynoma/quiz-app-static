@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>合格 - ジャンル1 - クイズアプリ</title>
+  <link rel="icon" href="../../imgs/favicon_certificate.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../css/style.css">
+
+  <!-- html2canvas for certificate generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- 合格証明書画面 -->
+    <div class="screen active" id="certificateScreen">
+      <h1>🎉 合格おめでとうございます！</h1>
+
+      <div class="score-text" id="scoreText"></div>
+
+      <!-- 合格証明書エリア -->
+      <div id="certificateArea" class="certificate-area">
+        <img id="certificateDisplayImage"
+            src=""
+            alt="合格証明書"
+            class="certificate-display-image"
+            title="クリックで別窓表示"
+            onclick="openCertificateInNewTab()">
+      </div>
+
+      <!-- ボタンエリア -->
+      <div class="button-area">
+        <button class="btn btn-green" onclick="downloadCertificate()">📥 合格証をダウンロード</button>
+        <button class="btn btn-twitter" onclick="shareToX()">𝕏 で共有する</button>
+        <button class="btn" id="nextLevelBtn" onclick="nextLevel()" style="display: none;">次のレベルへすすむ</button>
+        <button class="btn btn-gray" onclick="backToGenreSelection()">ジャンル選択へ戻る</button>
+      </div>
+    </div>
+
+    <!-- ローディング画面 -->
+    <div class="screen" id="loading">
+      <div class="loading">合格証を生成しています...</div>
+    </div>
+  </div>
+
+  <!-- キャプチャ用固定サイズ合格証エリア（画面外） -->
+  <div id="captureArea" class="capture-area-production">
+    <div class="result-background capture-background">
+      <img id="captureImage" src="" alt="合格証明書" class="result-bg-image capture-image">
+      <div class="result-overlay">
+        <div id="captureText" class="certificate-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 共通ライブラリ -->
+  <script src="../../js/config.js"></script>
+  <script src="../../js/common.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="js/pass.js"></script>
+</body>
+</html>

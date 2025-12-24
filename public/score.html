@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ランキング - クイズアプリ</title>
+  <link rel="icon" href="imgs/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- ヘッダーエリア -->
+  <div class="header-wrapper">
+    <div class="header-area">
+      <div class="header-row">
+        <div class="header-left">
+          <button class="header-btn" onclick="backToGenreSelection()">
+            ← ジャンル選択へ
+          </button>
+        </div>
+        <div class="header-center"></div>
+        <div class="header-right">
+          <!-- ニックネーム表示エリア -->
+          <div class="nickname-display">
+            <span id="nicknameText"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- ローディング画面 -->
+    <div class="screen" id="loading">
+      <div class="loading-spinner"></div>
+      <p>ランキングを読み込んでいます...</p>
+    </div>
+
+    <!-- ランキング画面 -->
+    <div class="screen" id="rankingScreen">
+      <h1>🏆 ランキング</h1>
+
+      <!-- タブ切替 -->
+      <div class="ranking-tabs">
+        <button class="tab-btn active" onclick="showTab('hallOfFame')">
+          殿堂入り
+        </button>
+        <button class="tab-btn" onclick="showTab('topChallengers')">
+          TOP10挑戦者
+        </button>
+      </div>
+
+      <!-- 殿堂入りタブ -->
+      <div class="ranking-tab-content active" id="hallOfFameTab">
+        <p class="description-text">
+          全ジャンル上級をクリアした偉大なる挑戦者たち
+        </p>
+        <div id="hallOfFameList" class="ranking-list"></div>
+      </div>
+
+      <!-- TOP10挑戦者タブ -->
+      <div class="ranking-tab-content" id="topChallengersTab">
+        <p class="description-text">
+          最速クリアタイムでランクインした挑戦者たち
+        </p>
+
+        <!-- ジャンル選択 -->
+        <div class="genre-selector">
+          <select id="genreSelect" onchange="loadTopChallengers()">
+            <option value="1">ジャンル1</option>
+            <option value="2">ジャンル2</option>
+            <option value="3">ジャンル3</option>
+            <option value="4">ジャンル4</option>
+            <option value="5">ジャンル5</option>
+            <option value="6">ジャンル6</option>
+          </select>
+          <select id="levelSelect" onchange="loadTopChallengers()">
+            <option value="初級">初級</option>
+            <option value="中級">中級</option>
+            <option value="上級">上級</option>
+          </select>
+        </div>
+
+        <div id="topChallengersList" class="ranking-list"></div>
+      </div>
+
+      <!-- 戻るボタン -->
+      <button class="btn btn-gray" onclick="backToGenreSelection()">
+        ジャンル選択へ戻る
+      </button>
+    </div>
+  </div>
+
+  <!-- 共通ライブラリ -->
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/score.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ニックネーム入力 - クイズアプリ</title>
+  <link rel="icon" href="imgs/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="screen active" id="nicknameScreen">
+      <h1>📝 ニックネーム入力</h1>
+      <p class="description-text">
+        合格証明書に表示するニックネームを入力してください
+      </p>
+
+      <!-- 編集モード時の警告メッセージ -->
+      <div id="nicknameWarning" class="nickname-warning" style="display: none;">
+        ⚠️ ニックネームを変更しても既存の合格証の名前は変更されません
+      </div>
+
+      <input
+        type="text"
+        id="nicknameInput"
+        maxlength="10"
+        placeholder="ニックネームを入力"
+        class="text-input"
+        autocomplete="off">
+
+      <div id="nicknameError" class="error-text" style="display: none;"></div>
+
+      <button class="btn" id="submitBtn" onclick="submitNickname()">次へ</button>
+
+      <!-- 編集モードの場合のみ表示 -->
+      <button class="btn btn-gray" id="cancelBtn" onclick="cancel()" style="display: none;">
+        キャンセル
+      </button>
+    </div>
+  </div>
+
+  <!-- 共通ライブラリ -->
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/nickname.js"></script>
+</body>
+</html>

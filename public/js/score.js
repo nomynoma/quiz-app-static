@@ -1,0 +1,193 @@
+// ========================================
+// ランキング画面
+// ========================================
+
+let currentTab = 'hallOfFame'; // 現在のタブ
+
+// ========================================
+// 初期化
+// ========================================
+document.addEventListener('DOMContentLoaded', function() {
+  // ニックネームチェック
+  const nickname = getNickname();
+  if (!nickname) {
+    alert('ニックネームが設定されていません。');
+    backToGenreSelection();
+    return;
+  }
+
+  // ニックネーム表示
+  document.getElementById('nicknameText').textContent = nickname;
+
+  // 初期データを読み込み
+  loadRankingData();
+});
+
+// ========================================
+// ランキングデータ読み込み
+// ========================================
+async function loadRankingData() {
+  showScreen('loading');
+
+  try {
+    // 殿堂入りデータを読み込み
+    await loadHallOfFame();
+
+    // TOP10挑戦者データを読み込み
+    await loadTopChallengers();
+
+    showScreen('rankingScreen');
+
+  } catch (error) {
+    console.error('ランキング読み込みエラー:', error);
+    alert('ランキングの読み込みに失敗しました: ' + error.message);
+    backToGenreSelection();
+  }
+}
+
+// ========================================
+// 殿堂入り読み込み
+// ========================================
+async function loadHallOfFame() {
+  try {
+    const result = await quizAPI.getHallOfFame();
+
+    const hallOfFameList = document.getElementById('hallOfFameList');
+    hallOfFameList.innerHTML = '';
+
+    if (!result.hallOfFame || result.hallOfFame.length === 0) {
+      hallOfFameList.innerHTML = '<p class="no-data-text">まだ殿堂入りした挑戦者はいません。</p>';
+      return;
+    }
+
+    result.hallOfFame.forEach((entry, index) => {
+      const item = document.createElement('div');
+      item.className = 'ranking-item';
+
+      let medal = '';
+      if (index === 0) medal = '🥇';
+      else if (index === 1) medal = '🥈';
+      else if (index === 2) medal = '🥉';
+      else medal = `${index + 1}位`;
+
+      item.innerHTML = `
+        <div class="ranking-rank">${medal}</div>
+        <div class="ranking-info">
+          <div class="ranking-nickname">${entry.nickname}</div>
+          <div class="ranking-date">${entry.completionDate || '日付不明'}</div>
+        </div>
+      `;
+
+      hallOfFameList.appendChild(item);
+    });
+
+  } catch (error) {
+    console.error('殿堂入り読み込みエラー:', error);
+    document.getElementById('hallOfFameList').innerHTML = '<p class="error-text">データの読み込みに失敗しました。</p>';
+  }
+}
+
+// ========================================
+// TOP10挑戦者読み込み
+// ========================================
+async function loadTopChallengers() {
+  const genreNumber = parseInt(document.getElementById('genreSelect').value);
+  const level = document.getElementById('levelSelect').value;
+
+  try {
+    const genre = GENRE_NAMES[genreNumber - 1];
+    const result = await quizAPI.getTopChallengers(genre, level);
+
+    const topChallengersList = document.getElementById('topChallengersList');
+    topChallengersList.innerHTML = '';
+
+    if (!result.topChallengers || result.topChallengers.length === 0) {
+      topChallengersList.innerHTML = '<p class="no-data-text">まだランキングデータがありません。</p>';
+      return;
+    }
+
+    result.topChallengers.forEach((entry, index) => {
+      const item = document.createElement('div');
+      item.className = 'ranking-item';
+
+      let medal = '';
+      if (index === 0) medal = '🥇';
+      else if (index === 1) medal = '🥈';
+      else if (index === 2) medal = '🥉';
+      else medal = `${index + 1}位`;
+
+      // 時間をフォーマット
+      const timeStr = formatTime(entry.clearTime);
+
+      item.innerHTML = `
+        <div class="ranking-rank">${medal}</div>
+        <div class="ranking-info">
+          <div class="ranking-nickname">${entry.nickname}</div>
+          <div class="ranking-time">クリアタイム: ${timeStr}</div>
+          <div class="ranking-date">${entry.date || '日付不明'}</div>
+        </div>
+      `;
+
+      topChallengersList.appendChild(item);
+    });
+
+  } catch (error) {
+    console.error('TOP10挑戦者読み込みエラー:', error);
+    document.getElementById('topChallengersList').innerHTML = '<p class="error-text">データの読み込みに失敗しました。</p>';
+  }
+}
+
+// ========================================
+// 時間フォーマット
+// ========================================
+function formatTime(seconds) {
+  if (!seconds || seconds <= 0) {
+    return '---';
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+
+  if (minutes > 0) {
+    return `${minutes}分${secs}秒`;
+  } else {
+    return `${secs}秒`;
+  }
+}
+
+// ========================================
+// タブ切替
+// ========================================
+function showTab(tabName) {
+  currentTab = tabName;
+
+  // タブボタンのアクティブ状態を切り替え
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(btn => btn.classList.remove('active'));
+
+  if (tabName === 'hallOfFame') {
+    tabBtns[0].classList.add('active');
+    document.getElementById('hallOfFameTab').classList.add('active');
+    document.getElementById('topChallengersTab').classList.remove('active');
+  } else {
+    tabBtns[1].classList.add('active');
+    document.getElementById('hallOfFameTab').classList.remove('active');
+    document.getElementById('topChallengersTab').classList.add('active');
+  }
+}
+
+// ========================================
+// ジャンル選択へ戻る
+// ========================================
+function backToGenreSelection() {
+  window.location.href = 'genre-select.html';
+}
+
+// ========================================
+// 画面切替
+// ========================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
