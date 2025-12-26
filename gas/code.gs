@@ -34,6 +34,14 @@ function doGet(e) {
 }
 
 // ========================================
+// doOptions - CORS プリフライトリクエスト対応
+// ========================================
+function doOptions(e) {
+  return ContentService.createTextOutput('')
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+// ========================================
 // doPost - POST APIのルーティング
 // ========================================
 function doPost(e) {
@@ -272,15 +280,30 @@ function getExtraStageQuestions(level, cache) {
     }
   }
 
-  // 全ジャンルの問題を統合
+  // 全ジャンルの問題を統合（正解ハッシュも追加）
   for (var i = 0; i < GENRES.length; i++) {
     var genre = GENRES[i];
     var cacheKey = 'q_' + genre + '_' + level;
-    var cached = cache.get(cacheKey);
+    var answerCacheKey = 'a_' + genre + '_' + level;
 
-    if (cached) {
+    var cached = cache.get(cacheKey);
+    var answerCached = cache.get(answerCacheKey);
+
+    if (cached && answerCached) {
       var genreQuestions = JSON.parse(cached);
-      allQuestions = allQuestions.concat(genreQuestions);
+      var answerMap = JSON.parse(answerCached);
+
+      // 各問題に正解ハッシュを追加
+      for (var j = 0; j < genreQuestions.length; j++) {
+        var q = genreQuestions[j];
+        var correctAnswer = answerMap[q.id];
+
+        if (correctAnswer !== undefined) {
+          q.correctHash = generateAnswerHash(correctAnswer);
+        }
+
+        allQuestions.push(q);
+      }
     }
   }
 
