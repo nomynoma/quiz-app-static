@@ -2,13 +2,13 @@
    ジャンル5専用スタイル
    ======================================== */
 
-/* ジャンル5のテーマカラー：パープル系 */
+/* ジャンル5のテーマカラー：ピンク系 */
 body {
-  background: linear-gradient(135deg, #ede9fe 0%, #f5f3ff 100%);
+  background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
 }
 
 .question-text {
-  color: #4c1d95;
+  color: #831843;
 }
 
 /* ジャンル5専用のカスタムスタイルをここに追加 */

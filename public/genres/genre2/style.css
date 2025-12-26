@@ -2,13 +2,13 @@
    ジャンル2専用スタイル
    ======================================== */
 
-/* ジャンル2のテーマカラー：グリーン系 */
+/* ジャンル2のテーマカラー：紫系 */
 body {
-  background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+  background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%);
 }
 
 .question-text {
-  color: #14532d;
+  color: #581c87;
 }
 
 /* ジャンル2専用のカスタムスタイルをここに追加 */

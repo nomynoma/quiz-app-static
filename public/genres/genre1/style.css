@@ -2,13 +2,13 @@
    ジャンル1専用スタイル
    ======================================== */
 
-/* ジャンル1のテーマカラー：ブルー系 */
+/* ジャンル1のテーマカラー：赤系 */
 body {
-  background: linear-gradient(135deg, #e0f7ff 0%, #f0f9ff 100%);
+  background: linear-gradient(135deg, #ffe4e6 0%, #fff1f2 100%);
 }
 
 .question-text {
-  color: #1e3a8a;
+  color: #881337;
 }
 
 /* ジャンル1専用のカスタムスタイルをここに追加 */

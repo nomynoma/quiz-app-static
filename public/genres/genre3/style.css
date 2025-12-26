@@ -2,13 +2,13 @@
    ジャンル3専用スタイル
    ======================================== */
 
-/* ジャンル3のテーマカラー：オレンジ系 */
+/* ジャンル3のテーマカラー：黄色系 */
 body {
-  background: linear-gradient(135deg, #ffedd5 0%, #fff7ed 100%);
+  background: linear-gradient(135deg, #fef9c3 0%, #fefce8 100%);
 }
 
 .question-text {
-  color: #7c2d12;
+  color: #713f12;
 }
 
 /* ジャンル3専用のカスタムスタイルをここに追加 */

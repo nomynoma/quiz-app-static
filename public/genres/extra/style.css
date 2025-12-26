@@ -2,6 +2,15 @@
    エクストラステージ専用スタイル
    ======================================== */
 
+/* エクストラステージのテーマカラー：黒系 */
+body {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+.question-text {
+  color: #f1f5f9;
+}
+
 /* タイマーエリア */
 .extra-timer-area {
   display: flex;

@@ -2,13 +2,13 @@
    ジャンル4専用スタイル
    ======================================== */
 
-/* ジャンル4のテーマカラー：ピンク系 */
+/* ジャンル4のテーマカラー：水色系 */
 body {
-  background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
 }
 
 .question-text {
-  color: #831843;
+  color: #0c4a6e;
 }
 
 /* ジャンル4専用のカスタムスタイルをここに追加 */
