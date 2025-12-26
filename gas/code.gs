@@ -134,6 +134,12 @@ function getQuestions(genre, level, userId) {
   }
 
   var cache = CacheService.getScriptCache();
+
+  // エクストラステージの場合は全ジャンルの問題を統合
+  if (genre === 'エクストラステージ') {
+    return getExtraStageQuestions(level, cache);
+  }
+
   var cacheKey = 'q_' + genre + '_' + level;
   var cached = cache.get(cacheKey);
 
@@ -236,6 +242,77 @@ function judgeAllAnswers(payload) {
     results: results,
     wrongAnswers: wrongAnswers
   };
+}
+
+// ========================================
+// エクストラステージ問題取得（全ジャンル統合）
+// ========================================
+function getExtraStageQuestions(level, cache) {
+  var allQuestions = [];
+  var missingCache = false;
+
+  // 全ジャンルの指定レベルの問題を統合
+  for (var i = 0; i < GENRES.length; i++) {
+    var genre = GENRES[i];
+    var cacheKey = 'q_' + genre + '_' + level;
+    var cached = cache.get(cacheKey);
+
+    if (!cached) {
+      missingCache = true;
+      break;
+    }
+  }
+
+  // キャッシュが不足している場合は全キャッシュをリロード
+  if (missingCache) {
+    Logger.log('エクストラステージ用のキャッシュが不足しているため、全キャッシュをリロードします');
+    for (var i = 0; i < GENRES.length; i++) {
+      var genre = GENRES[i];
+      reloadSingleCache(genre, level);
+    }
+  }
+
+  // 全ジャンルの問題を統合
+  for (var i = 0; i < GENRES.length; i++) {
+    var genre = GENRES[i];
+    var cacheKey = 'q_' + genre + '_' + level;
+    var cached = cache.get(cacheKey);
+
+    if (cached) {
+      var genreQuestions = JSON.parse(cached);
+      allQuestions = allQuestions.concat(genreQuestions);
+    }
+  }
+
+  if (allQuestions.length === 0) {
+    throw new Error('エクストラステージの問題が見つかりません');
+  }
+
+  // 問題順をシャッフル
+  allQuestions = shuffleArray(allQuestions);
+
+  // 必要数に制限（10問）
+  var LIMIT = 10;
+  if (allQuestions.length > LIMIT) {
+    allQuestions = allQuestions.slice(0, LIMIT);
+  }
+
+  // 各問題の選択肢をシャッフル
+  for (var i = 0; i < allQuestions.length; i++) {
+    var q = allQuestions[i];
+    if (q.selectionType !== 'input') {
+      var choices = [q.choiceA || '', q.choiceB || '', q.choiceC || '', q.choiceD || ''];
+      var validChoices = choices.filter(function(c) { return c; });
+      validChoices = shuffleArray(validChoices);
+
+      q.choiceA = validChoices[0] || '';
+      q.choiceB = validChoices[1] || '';
+      q.choiceC = validChoices[2] || '';
+      q.choiceD = validChoices[3] || '';
+    }
+  }
+
+  return allQuestions;
 }
 
 // ========================================
