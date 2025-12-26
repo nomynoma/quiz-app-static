@@ -16,6 +16,11 @@ let currentQuestionIndex = 0; // 現在の問題番号
 let userAnswers = []; // ユーザーの回答 [{questionId, answer}, ...]
 let selectedChoices = []; // 現在の問題で選択中の選択肢
 
+// タイマー関連
+let timerSeconds = 10; // 1問あたりの制限時間（秒）
+let currentTimer = 10; // 現在の残り時間
+let timerInterval = null; // タイマーのインターバルID
+
 // ========================================
 // 初期化
 // ========================================
@@ -87,6 +92,78 @@ async function loadQuestions() {
 }
 
 // ========================================
+// タイマー開始
+// ========================================
+function startTimer() {
+  // 既存のタイマーをクリア
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
+
+  // タイマーをリセット
+  currentTimer = timerSeconds;
+
+  // タイマー表示を更新
+  updateTimerDisplay();
+
+  // タイマー開始
+  timerInterval = setInterval(() => {
+    currentTimer--;
+    updateTimerDisplay();
+
+    if (currentTimer <= 0) {
+      clearInterval(timerInterval);
+      // 時間切れ - ゲームオーバー
+      handleTimeOut();
+    }
+  }, 1000);
+}
+
+// ========================================
+// タイマー表示更新
+// ========================================
+function updateTimerDisplay() {
+  const timerEl = document.getElementById('extraTimer');
+  const progressBarEl = document.getElementById('extraTimerProgressBar');
+
+  if (timerEl) {
+    timerEl.textContent = currentTimer;
+
+    // 3秒以下で警告状態
+    if (currentTimer <= 3) {
+      timerEl.classList.add('warning');
+      progressBarEl.classList.add('warning');
+    } else {
+      timerEl.classList.remove('warning');
+      progressBarEl.classList.remove('warning');
+    }
+  }
+
+  if (progressBarEl) {
+    const percentage = (currentTimer / timerSeconds) * 100;
+    progressBarEl.style.width = percentage + '%';
+  }
+}
+
+// ========================================
+// タイマー停止
+// ========================================
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+// ========================================
+// 時間切れ処理
+// ========================================
+function handleTimeOut() {
+  // ゲームオーバー
+  showGameOver(currentQuestionIndex + 1);
+}
+
+// ========================================
 // 問題表示
 // ========================================
 function showQuestion() {
@@ -98,6 +175,13 @@ function showQuestion() {
 
   const q = questions[currentQuestionIndex];
   const isMultiple = q.selectionType === 'multiple';
+
+  // 進捗表示を更新
+  document.getElementById('extraCurrentNum').textContent = currentQuestionIndex + 1;
+  document.getElementById('extraTotalNum').textContent = questions.length;
+
+  // タイマー開始
+  startTimer();
   const isInput = q.selectionType === 'input';
   const isImage = q.displayType === 'image';
 
@@ -207,6 +291,8 @@ function showQuestion() {
 
         } else {
           // 単一選択 - 即座に判定
+          stopTimer(); // タイマー停止
+
           const allBtns = choicesDiv.querySelectorAll('.choice-btn');
           allBtns.forEach(b => b.disabled = true); // 連打防止
 
@@ -230,6 +316,7 @@ function showQuestion() {
                 showQuestion();
               } else {
                 // 全問正解！
+                stopTimer();
                 showResult(questions.length, questions.length, []);
               }
             }, 800);
@@ -354,6 +441,9 @@ async function submitInputAnswer() {
     return;
   }
 
+  // タイマー停止
+  stopTimer();
+
   // ボタンを無効化
   submitBtn.disabled = true;
   submitBtn.textContent = '判定中...';
@@ -400,6 +490,9 @@ async function submitAllAnswers() {
   if (q.selectionType !== 'multiple') {
     return;
   }
+
+  // タイマー停止
+  stopTimer();
 
   const submitBtn = document.getElementById('submitAllBtn');
   submitBtn.disabled = true;
