@@ -57,7 +57,7 @@ function saveCertificateMetadata(key, nickname, date) {
     };
     const jsonStr = JSON.stringify(metadata);
     const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
-    localStorage.setItem('cert_' + key, encoded);
+    localStorage.setItem(key, encoded);
     return true;
   } catch (e) {
     console.error('合格証メタデータ保存エラー:', e);
@@ -68,7 +68,7 @@ function saveCertificateMetadata(key, nickname, date) {
 // 合格証メタデータを取得
 function getCertificateMetadata(key) {
   try {
-    const encoded = localStorage.getItem('cert_' + key);
+    const encoded = localStorage.getItem(key);
     if (!encoded) return null;
 
     const jsonStr = decodeURIComponent(escape(atob(encoded)));

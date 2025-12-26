@@ -124,11 +124,11 @@ function unlockExtraStage() {
   // 全ジャンル×全レベルの合格証を生成
   for (let genreNum = 1; genreNum <= 6; genreNum++) {
     for (let levelNum = 1; levelNum <= 3; levelNum++) {
-      const key = `${genreNum}-${levelNum}`;
+      const key = `cert_${genreNum}-${levelNum}`;
       // common.jsのsaveCertificateMetadata()を使用
       if (typeof saveCertificateMetadata === 'function') {
         saveCertificateMetadata(key, nickname, date);
-        console.log(`✅ ジャンル${genreNum}・レベル${levelNum}の合格証を生成: cert_${key}`);
+        console.log(`✅ ジャンル${genreNum}・レベル${levelNum}の合格証を生成: ${key}`);
       }
     }
   }
