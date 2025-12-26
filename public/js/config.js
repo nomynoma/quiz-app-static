@@ -117,9 +117,20 @@ function getAppBaseUrl() {
 function unlockExtraStage() {
   console.log('🎮 エクストラステージを強制出現させます...');
 
-  for (let i = 1; i <= 6; i++) {
-    localStorage.setItem(`genre${i}_advanced_cleared`, 'true');
-    console.log(`✅ ジャンル${i}の上級クリアフラグを設定`);
+  // common.jsのgetNickname()を使用
+  const nickname = (typeof getNickname === 'function' ? getNickname() : null) || 'テストユーザー';
+  const date = new Date().toISOString().split('T')[0];
+
+  // 全ジャンル×全レベルの合格証を生成
+  for (let genreNum = 1; genreNum <= 6; genreNum++) {
+    for (let levelNum = 1; levelNum <= 3; levelNum++) {
+      const key = `${genreNum}-${levelNum}`;
+      // common.jsのsaveCertificateMetadata()を使用
+      if (typeof saveCertificateMetadata === 'function') {
+        saveCertificateMetadata(key, nickname, date);
+        console.log(`✅ ジャンル${genreNum}・レベル${levelNum}の合格証を生成: cert_${key}`);
+      }
+    }
   }
 
   console.log('✨ エクストラステージが出現しました！');
@@ -134,9 +145,13 @@ function unlockExtraStage() {
 function lockExtraStage() {
   console.log('🔒 エクストラステージを非表示にします...');
 
-  for (let i = 1; i <= 6; i++) {
-    localStorage.removeItem(`genre${i}_advanced_cleared`);
-    console.log(`❌ ジャンル${i}の上級クリアフラグを削除`);
+  // 全ジャンル×全レベルの合格証を削除
+  for (let genreNum = 1; genreNum <= 6; genreNum++) {
+    for (let levelNum = 1; levelNum <= 3; levelNum++) {
+      const key = `cert_${genreNum}-${levelNum}`;
+      localStorage.removeItem(key);
+      console.log(`❌ ジャンル${genreNum}・レベル${levelNum}の合格証を削除: ${key}`);
+    }
   }
 
   console.log('✅ エクストラステージを非表示にしました');
