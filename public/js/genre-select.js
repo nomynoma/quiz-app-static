@@ -217,7 +217,7 @@ function initializeExtraStageButton() {
     };
 
     // エクストラステージの合格証バッジ
-    const extraCertMetadata = getCertificateMetadata('cert_ALL');
+    const extraCertMetadata = getCertificateMetadata('cert_ex');
     if (extraCertMetadata) {
       const badgeWrapper = document.createElement('div');
       badgeWrapper.style.position = 'relative';
@@ -232,7 +232,7 @@ function initializeExtraStageButton() {
       badgeMedal.style.right = '-10px';
       badgeMedal.onclick = function(e) {
         e.stopPropagation();
-        openCertificateModal('ALL');
+        openCertificateModal('ex');
       };
 
       badgeWrapper.appendChild(extraBtn);
@@ -328,7 +328,7 @@ function openCertificateModal(key) {
   const levelNumber = key.split('-')[1];
 
   let title = '';
-  if (key === 'ALL') {
+  if (key === 'ex') {
     title = 'エクストラステージ合格証';
   } else if (levelNumber === '4') {
     title = GENRE_NAMES[parseInt(genreNumber) - 1] + ' 超級合格証';
@@ -344,10 +344,16 @@ function openCertificateModal(key) {
   `;
 
   // 合格証画像を生成して表示
-  const bgImageUrl = getCertificateBgImageUrl(
-    GENRE_NAMES[parseInt(genreNumber) - 1] || 'ジャンル1',
-    LEVEL_NAMES[parseInt(levelNumber) - 1] || '初級'
-  );
+  let bgImageUrl;
+  if (key === 'ex') {
+    // エクストラステージは固定の背景画像
+    bgImageUrl = CERTIFICATE_BG_IMAGE_MAP['ALL'] || CERTIFICATE_BG_IMAGE_MAP['1-1'];
+  } else {
+    bgImageUrl = getCertificateBgImageUrl(
+      GENRE_NAMES[parseInt(genreNumber) - 1] || 'ジャンル1',
+      LEVEL_NAMES[parseInt(levelNumber) - 1] || '初級'
+    );
+  }
 
   document.getElementById('certificateModalImage').src = bgImageUrl;
   document.getElementById('certificateModal').style.display = 'flex';

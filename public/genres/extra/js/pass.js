@@ -95,15 +95,8 @@ async function generateCertificate() {
   const today = new Date();
   const dateStr = formatDate(today);
 
-  // レベル番号を取得
-  let levelNumber;
-  if (quizResult.level === '超級') {
-    levelNumber = 4;
-  } else {
-    levelNumber = LEVEL_NAMES.indexOf(quizResult.level) + 1;
-  }
-
-  const mapKey = `${GENRE_NUMBER}-${levelNumber}`;
+  // エクストラステージは固定の背景画像を使用
+  const mapKey = 'ALL';
 
   // 背景画像URLを取得
   const bgImageUrl = CERTIFICATE_BG_IMAGE_MAP[mapKey] || CERTIFICATE_BG_IMAGE_MAP['1-1'];
@@ -147,8 +140,8 @@ async function generateCertificate() {
       // 合格証を表示
       document.getElementById('certificateDisplayImage').src = certificateImageData;
 
-      // メタデータを保存
-      saveCertificateMetadata(`cert_${mapKey}`, nickname, dateStr);
+      // メタデータを保存（エクストラステージは cert_ex）
+      saveCertificateMetadata('cert_ex', nickname, dateStr);
 
       showScreen('certificateScreen');
 

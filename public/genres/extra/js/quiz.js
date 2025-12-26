@@ -58,12 +58,8 @@ async function loadQuestions() {
 
     const userId = getBrowserId();
 
-    // 超級モードの判定
-    if (currentLevel === '超級') {
-      questions = await quizAPI.getUltraModeQuestions(GENRE_NAME, userId);
-    } else {
-      questions = await quizAPI.getQuestions(GENRE_NAME, currentLevel, userId);
-    }
+    // エクストラステージは専用API（全ジャンル×全レベルの問題を取得）
+    questions = await quizAPI.getExtraModeQuestions(userId);
 
     markPerformance('loadEnd');
     measurePerformance('loadStart', 'loadEnd');
