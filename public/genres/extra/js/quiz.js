@@ -153,7 +153,24 @@ function showQuestion() {
       updateSubmitButton();
     });
 
+    // Enterキーで回答確定
+    input.addEventListener('keypress', async function(e) {
+      if (e.key === 'Enter' && this.value.trim() !== '') {
+        await submitInputAnswer();
+      }
+    });
+
     choicesDiv.appendChild(input);
+
+    // 入力式用の回答ボタンを追加
+    const submitInputBtn = document.createElement('button');
+    submitInputBtn.className = 'btn btn-green';
+    submitInputBtn.textContent = '回答する';
+    submitInputBtn.id = 'submitInputBtn';
+    submitInputBtn.style.marginTop = '20px';
+    submitInputBtn.onclick = submitInputAnswer;
+
+    choicesDiv.appendChild(submitInputBtn);
 
   } else {
     // 選択式
@@ -177,7 +194,7 @@ function showQuestion() {
         btn.classList.add('selected');
       }
 
-      btn.onclick = function() {
+      btn.onclick = async function() {
         if (isMultiple) {
           // 複数選択
           if (selectedChoices.includes(choice)) {
@@ -187,23 +204,49 @@ function showQuestion() {
             selectedChoices.push(choice);
             btn.classList.add('selected');
           }
+
+          // 回答を保存（複数選択は確定ボタン待ち）
+          userAnswers[currentQuestionIndex].answer = selectedChoices.length > 0 ? selectedChoices : null;
+          updateSubmitButton();
+
         } else {
-          // 単一選択
+          // 単一選択 - 即座に判定
           const allBtns = choicesDiv.querySelectorAll('.choice-btn');
-          allBtns.forEach(b => b.classList.remove('selected'));
+          allBtns.forEach(b => b.disabled = true); // 連打防止
 
           selectedChoices = [choice];
           btn.classList.add('selected');
-        }
 
-        // 回答を保存
-        if (isMultiple) {
-          userAnswers[currentQuestionIndex].answer = selectedChoices.length > 0 ? selectedChoices : null;
-        } else {
-          userAnswers[currentQuestionIndex].answer = selectedChoices[0] || null;
-        }
+          // 回答を保存
+          userAnswers[currentQuestionIndex].answer = choice;
 
-        updateSubmitButton();
+          // ハッシュで正誤判定
+          const isCorrect = await checkAnswerByHash(choice, q.correctHash);
+
+          if (isCorrect) {
+            // 正解
+            btn.classList.add('correct');
+
+            // 次の問題へ進む or 全問正解
+            setTimeout(() => {
+              if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+              } else {
+                // 全問正解！
+                showResult(questions.length, questions.length, []);
+              }
+            }, 800);
+
+          } else {
+            // 不正解 - ゲームオーバー
+            btn.classList.add('incorrect');
+
+            setTimeout(() => {
+              showGameOver(currentQuestionIndex + 1);
+            }, 800);
+          }
+        }
       };
 
       choicesDiv.appendChild(btn);
@@ -247,8 +290,11 @@ function updateNavigationButtons() {
   const prevBtn = document.getElementById('prevQuestionBtn');
   const nextBtn = document.getElementById('nextQuestionBtn');
 
-  prevBtn.disabled = currentQuestionIndex === 0;
-  nextBtn.disabled = currentQuestionIndex === questions.length - 1;
+  // エクストラステージでは前後移動を無効化（1問ミスでアウト）
+  prevBtn.disabled = true;
+  prevBtn.style.display = 'none';
+  nextBtn.disabled = true;
+  nextBtn.style.display = 'none';
 }
 
 // ========================================
@@ -270,10 +316,8 @@ function updateProgressIndicator() {
       dot.classList.add('current');
     }
 
-    dot.onclick = function() {
-      currentQuestionIndex = index;
-      showQuestion();
-    };
+    // エクストラステージではクリック無効（順番に解く必要がある）
+    // dot.onclick は設定しない
 
     progressDots.appendChild(dot);
   });
@@ -300,41 +344,131 @@ function updateSubmitButton() {
 }
 
 // ========================================
-// 全問一括採点
+// 入力式回答の送信
+// ========================================
+async function submitInputAnswer() {
+  const input = document.getElementById('answerInput');
+  const submitBtn = document.getElementById('submitInputBtn');
+
+  if (!input || !submitBtn) return;
+
+  const userAnswer = input.value.trim();
+  if (!userAnswer) {
+    alert('回答を入力してください');
+    return;
+  }
+
+  // ボタンを無効化
+  submitBtn.disabled = true;
+  submitBtn.textContent = '判定中...';
+  input.disabled = true;
+
+  const q = questions[currentQuestionIndex];
+
+  // ハッシュで正誤判定
+  const isCorrect = await checkAnswerByHash(userAnswer, q.correctHash);
+
+  if (isCorrect) {
+    // 正解
+    submitBtn.textContent = '正解！';
+    submitBtn.classList.add('btn-green');
+
+    setTimeout(() => {
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        showQuestion();
+      } else {
+        // 全問正解！
+        showResult(questions.length, questions.length, []);
+      }
+    }, 800);
+
+  } else {
+    // 不正解 - ゲームオーバー
+    submitBtn.textContent = '不正解';
+    submitBtn.classList.remove('btn-green');
+    submitBtn.classList.add('btn-red');
+
+    setTimeout(() => {
+      showGameOver(currentQuestionIndex + 1);
+    }, 800);
+  }
+}
+
+// ========================================
+// 複数選択の回答確定
 // ========================================
 async function submitAllAnswers() {
+  const q = questions[currentQuestionIndex];
+
+  if (q.selectionType !== 'multiple') {
+    return;
+  }
+
   const submitBtn = document.getElementById('submitAllBtn');
   submitBtn.disabled = true;
-  submitBtn.textContent = '採点中...';
+  submitBtn.textContent = '判定中...';
 
-  try {
-    markPerformance('judgeStart');
+  // 選択肢をすべて無効化
+  const allBtns = document.querySelectorAll('.choice-btn');
+  allBtns.forEach(b => b.disabled = true);
 
-    const userId = getBrowserId();
-    const result = await quizAPI.judgeAnswers(
-      GENRE_NAME,
-      currentLevel,
-      userAnswers,
-      userId
-    );
+  // ハッシュで正誤判定
+  const isCorrect = await checkAnswerByHash(selectedChoices, q.correctHash);
 
-    markPerformance('judgeEnd');
-    measurePerformance('judgeStart', 'judgeEnd');
+  if (isCorrect) {
+    // 正解
+    submitBtn.textContent = '正解！';
 
-    // 正解数をカウント
-    const correctCount = result.results.filter(r => r === true).length;
-    const totalCount = result.results.length;
+    setTimeout(() => {
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        showQuestion();
+      } else {
+        // 全問正解！
+        showResult(questions.length, questions.length, []);
+      }
+    }, 800);
 
-    console.log(`採点結果: ${correctCount}/${totalCount}問正解`);
+  } else {
+    // 不正解 - ゲームオーバー
+    submitBtn.textContent = '不正解';
 
-    // 結果を表示
-    showResult(correctCount, totalCount, result.wrongAnswers);
+    setTimeout(() => {
+      showGameOver(currentQuestionIndex + 1);
+    }, 800);
+  }
+}
 
-  } catch (error) {
-    console.error('採点エラー:', error);
-    alert('採点に失敗しました: ' + error.message);
-    submitBtn.disabled = false;
-    submitBtn.textContent = '採点する';
+// ========================================
+// ゲームオーバー表示
+// ========================================
+function showGameOver(reachedQuestion) {
+  // 結果画面に切り替え
+  showScreen('resultScreen');
+
+  // ヘッダーを非表示
+  document.querySelector('.progress-indicator-header').style.display = 'none';
+  document.getElementById('questionNumberHeader').textContent = '';
+
+  // 不合格表示
+  document.getElementById('passResult').style.display = 'none';
+  document.getElementById('failResult').style.display = 'block';
+
+  document.getElementById('failResultText').innerHTML = `
+    <div style="font-size: 48px; font-weight: bold; color: #e74c3c; margin: 20px 0;">
+      問題 ${reachedQuestion} で失敗
+    </div>
+    <p style="font-size: 18px; color: #666;">
+      エクストラステージは1問でも間違えると終了です。<br>
+      もう一度挑戦してみましょう！
+    </p>
+  `;
+
+  // 誤答一覧は非表示
+  const wrongAnswersList = document.getElementById('wrongAnswersList');
+  if (wrongAnswersList) {
+    wrongAnswersList.style.display = 'none';
   }
 }
 

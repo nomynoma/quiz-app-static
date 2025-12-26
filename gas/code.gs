@@ -71,6 +71,14 @@ function doPost(e) {
         result = getTopScores(payload);
         break;
 
+      case 'getHallOfFame':
+        result = getHallOfFame();
+        break;
+
+      case 'getTopChallengers':
+        result = getTopChallengers(payload.genre, payload.level);
+        break;
+
       default:
         return jsonResponse({ error: 'Unknown action: ' + action }, 400);
     }
@@ -597,69 +605,10 @@ function reloadSingleCache(genre, level) {
 }
 
 function reloadQuestionCache() {
-  var cache = CacheService.getScriptCache();
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-
+  // 全ジャンル×全レベルのキャッシュを再構築
   for (var g = 0; g < GENRES.length; g++) {
-    var genreName = GENRES[g];
-    var sheet = ss.getSheetByName(genreName);
-    if (!sheet) continue;
-
-    var data = sheet.getDataRange().getValues();
-
     for (var l = 0; l < LEVELS.length; l++) {
-      var level = LEVELS[l];
-      var questions = [];
-      var answerMap = {};
-      var hintMap = {};
-
-      for (var r = 1; r < data.length; r++) {
-        if (data[r][1] !== level) continue;
-
-        var questionId = data[r][0];
-
-        questions.push({
-          id: questionId,
-          level: data[r][1],
-          selectionType: (data[r][2] || 'single').toLowerCase(),
-          displayType: (data[r][3] || 'text').toLowerCase(),
-          question: data[r][4],
-          choiceA: data[r][5],
-          choiceB: data[r][6],
-          choiceC: data[r][7],
-          choiceD: data[r][8]
-        });
-
-        hintMap[questionId] = {
-          question: data[r][4] || '',
-          hintUrl: data[r][10] || '',
-          hintText: data[r][11] || ''
-        };
-
-        var ans = data[r][9];
-        if (!questionId || ans === '') continue;
-
-        var selectionType = data[r][2];
-        if (selectionType !== 'input') {
-          var correctLabels = ans.toString().trim().toUpperCase().split(',');
-          var labelToText = {
-            A: data[r][5],
-            B: data[r][6],
-            C: data[r][7],
-            D: data[r][8]
-          };
-
-          answerMap[questionId] = correctLabels
-            .map(function(c) { return labelToText[c]; })
-            .filter(Boolean);
-        } else {
-          answerMap[questionId] = ans.toString().trim().toUpperCase();
-        }
-      }
-
-      cache.put('q_' + genreName + '_' + level, JSON.stringify(questions), 604800);
-      cache.put('a_' + genreName + '_' + level, JSON.stringify(answerMap), 604800);
-      cache.put('h_' + genreName + '_' + level, JSON.stringify(hintMap), 604800);
+      reloadSingleCache(GENRES[g], LEVELS[l]);
     }
   }
 
@@ -730,4 +679,28 @@ function shuffleArray(array) {
     shuffled[j] = temp;
   }
   return shuffled;
+}
+
+// ========================================
+// API: getHallOfFame - 殿堂入り取得
+// ========================================
+function getHallOfFame() {
+  // 殿堂入りデータ（全ジャンル全レベル制覇したユーザー）
+  // 現在はモックデータを返す（実装が必要な場合はスプレッドシートに保存）
+  return {
+    users: []
+  };
+}
+
+// ========================================
+// API: getTopChallengers - TOP10挑戦者取得
+// ========================================
+function getTopChallengers(genre, level) {
+  // ジャンル×レベル別のTOP10挑戦者データ
+  // 現在はモックデータを返す（実装が必要な場合はスプレッドシートに保存）
+  return {
+    genre: genre,
+    level: level,
+    challengers: []
+  };
 }
