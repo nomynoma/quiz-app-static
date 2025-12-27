@@ -924,25 +924,152 @@ function shuffleArray(array) {
 }
 
 // ========================================
+// ユーティリティ: 日付フォーマット
+// ========================================
+function formatDate(date) {
+  if (!date) return '';
+
+  var d = new Date(date);
+  var year = d.getFullYear();
+  var month = ('0' + (d.getMonth() + 1)).slice(-2);
+  var day = ('0' + d.getDate()).slice(-2);
+  var hours = ('0' + d.getHours()).slice(-2);
+  var minutes = ('0' + d.getMinutes()).slice(-2);
+
+  return year + '/' + month + '/' + day + ' ' + hours + ':' + minutes;
+}
+
+// ========================================
 // API: getHallOfFame - 殿堂入り取得
 // ========================================
 function getHallOfFame() {
-  // 殿堂入りデータ（全ジャンル全レベル制覇したユーザー）
-  // 現在はモックデータを返す（実装が必要な場合はスプレッドシートに保存）
-  return {
-    users: []
-  };
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('スコアランキング');
+
+    if (!sheet) {
+      return { hallOfFame: [] };
+    }
+
+    var data = sheet.getDataRange().getValues();
+    var hallOfFameList = [];
+
+    // ヘッダー行をスキップ（i=1から開始）
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var browserId = row[0];
+      var nickname = row[1];
+      var score = row[2];
+      var timestamp = row[3];
+      var genre = row[4];
+      var isPerfect = row[5];
+      var time = row[6] || null;
+
+      // エクストラステージで全問正解（isPerfect = true）の人だけを抽出
+      if (genre === 'エクストラステージ' && isPerfect === true) {
+        hallOfFameList.push({
+          nickname: nickname,
+          completionDate: formatDate(timestamp),
+          time: time,
+          timestamp: timestamp
+        });
+      }
+    }
+
+    // 時間が短い順にソート（時間が同じ場合はタイムスタンプの早い順）
+    hallOfFameList.sort(function(a, b) {
+      if (a.time !== null && b.time !== null) {
+        if (a.time !== b.time) {
+          return a.time - b.time;
+        }
+      }
+      return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+
+    return { hallOfFame: hallOfFameList };
+
+  } catch (error) {
+    Logger.log('getHallOfFame エラー: ' + error);
+    return { hallOfFame: [], error: error.toString() };
+  }
 }
 
 // ========================================
 // API: getTopChallengers - TOP10挑戦者取得
 // ========================================
 function getTopChallengers(genre, level) {
-  // ジャンル×レベル別のTOP10挑戦者データ
-  // 現在はモックデータを返す（実装が必要な場合はスプレッドシートに保存）
-  return {
-    genre: genre,
-    level: level,
-    challengers: []
-  };
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('スコアランキング');
+
+    if (!sheet) {
+      return {
+        genre: genre,
+        level: level,
+        topChallengers: []
+      };
+    }
+
+    var data = sheet.getDataRange().getValues();
+    var challengersList = [];
+
+    // ジャンル×レベルの検索文字列（例: "ジャンル1 初級"）
+    var genreLevelKey = genre + ' ' + level;
+
+    // ヘッダー行をスキップ（i=1から開始）
+    // 列: A=browserId, B=nickname, C=score, D=timestamp, E=genre, F=isPerfect, G=time
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      if (!row[0]) continue; // 空行スキップ
+
+      var rowGenre = row[4]; // E列: genre
+
+      // 指定したジャンル×レベルのみ抽出
+      if (rowGenre === genreLevelKey) {
+        var browserId = row[0];
+        var nickname = row[1];
+        var score = row[2];
+        var timestamp = row[3];
+        var isPerfect = row[5];
+        var time = row[6] || null;
+
+        // 満点（isPerfect=true）のデータのみ
+        if (isPerfect === true && time !== null) {
+          challengersList.push({
+            browserId: browserId,
+            nickname: nickname,
+            clearTime: time / 1000, // ミリ秒を秒に変換
+            date: formatDate(timestamp),
+            timestamp: timestamp
+          });
+        }
+      }
+    }
+
+    // クリアタイムの短い順にソート（タイムが同じ場合はタイムスタンプの早い順）
+    challengersList.sort(function(a, b) {
+      if (a.clearTime !== b.clearTime) {
+        return a.clearTime - b.clearTime;
+      }
+      return new Date(a.timestamp) - new Date(b.timestamp);
+    });
+
+    // TOP10だけ取得
+    var top10 = challengersList.slice(0, 10);
+
+    return {
+      genre: genre,
+      level: level,
+      topChallengers: top10
+    };
+
+  } catch (error) {
+    Logger.log('getTopChallengers エラー: ' + error);
+    return {
+      genre: genre,
+      level: level,
+      topChallengers: [],
+      error: error.toString()
+    };
+  }
 }
