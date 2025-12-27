@@ -16,6 +16,8 @@ let questions = []; // 問題配列
 let currentQuestionIndex = 0; // 現在の問題番号
 let userAnswers = []; // ユーザーの回答 [{questionId, answer}, ...]
 let selectedChoices = []; // 現在の問題で選択中の選択肢
+let timerInterval = null; // タイマーのインターバルID
+let remainingTime = 10; // 残り時間（秒）
 
 // ========================================
 // 初期化
@@ -62,17 +64,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // 問題読み込み
 // ========================================
 async function loadQuestions() {
-  console.log('[DEBUG] extra loadQuestions called');
-  console.log('[DEBUG] GENRE_NAME:', GENRE_NAME);
-  console.log('[DEBUG] currentLevel:', currentLevel);
-
   showScreen('loading');
 
   try {
     // 共通API呼び出し
     questions = await loadQuestionsCommon(GENRE_NAME, currentLevel);
-
-    console.log('[DEBUG] questions received:', questions);
 
     if (!questions || questions.length === 0) {
       alert('問題の取得に失敗しました。');
@@ -90,8 +86,7 @@ async function loadQuestions() {
     showQuestion();
 
   } catch (error) {
-    console.error('[DEBUG] 問題読み込みエラー:', error);
-    console.error('[DEBUG] エラー詳細:', error.stack);
+    console.error('問題読み込みエラー:', error);
     alert('問題の読み込みに失敗しました: ' + error.message);
     backToGenreSelection();
   }
@@ -104,6 +99,8 @@ function showQuestion() {
   showScreen('questionScreen');
 
   if (currentQuestionIndex >= questions.length) {
+    // 全問終了 → 採点
+    submitAllAnswers();
     return;
   }
 
@@ -114,7 +111,11 @@ function showQuestion() {
 
   // 問題番号表示
   const questionNumberHeader = document.getElementById('questionNumberHeader');
-  questionNumberHeader.textContent = `${currentLevel}問題 ${currentQuestionIndex + 1} / ${questions.length}`;
+  questionNumberHeader.textContent = `エクストラステージ問題 ${currentQuestionIndex + 1} / ${questions.length}`;
+
+  // エクストラステージ専用: 進捗表示更新
+  document.getElementById('extraCurrentNum').textContent = currentQuestionIndex + 1;
+  document.getElementById('extraTotalNum').textContent = questions.length;
 
   // 複数選択の注意書き
   const multipleInstruction = document.getElementById('multipleInstruction');
@@ -123,6 +124,9 @@ function showQuestion() {
   } else {
     multipleInstruction.style.display = 'none';
   }
+
+  // タイマーをリセットして開始
+  startTimer();
 
   // 問題文表示
   const questionText = document.getElementById('questionText');
@@ -195,7 +199,7 @@ function showQuestion() {
             btn.classList.add('selected');
           }
         } else {
-          // 単一選択
+          // 単一選択 → エクストラステージでは即座に次の問題へ
           const allBtns = choicesDiv.querySelectorAll('.choice-btn');
           allBtns.forEach(b => b.classList.remove('selected'));
 
@@ -208,6 +212,13 @@ function showQuestion() {
           userAnswers[currentQuestionIndex].answer = selectedChoices.length > 0 ? selectedChoices : null;
         } else {
           userAnswers[currentQuestionIndex].answer = selectedChoices[0] || null;
+
+          // エクストラステージ: 単一選択の場合は即座に次の問題へ
+          stopTimer();
+          setTimeout(() => {
+            currentQuestionIndex++;
+            showQuestion();
+          }, 300); // 0.3秒後に次の問題へ
         }
 
         updateSubmitButton();
@@ -220,11 +231,66 @@ function showQuestion() {
   // エクストラステージには前/次ボタンがないので、この呼び出しをコメントアウト
   // updateNavigationButtons();
 
-  // 回答状況インジケーター更新
-  updateProgressIndicator();
+  // エクストラステージではドットインジケーターを非表示
+  const progressIndicatorHeader = document.getElementById('progressIndicatorHeader');
+  if (progressIndicatorHeader) {
+    progressIndicatorHeader.style.display = 'none';
+  }
 
   // エクストラステージには採点ボタンがないので、この呼び出しをコメントアウト
   // updateSubmitButton();
+}
+
+// ========================================
+// タイマー開始
+// ========================================
+function startTimer() {
+  // 既存のタイマーを停止
+  stopTimer();
+
+  // タイマーをリセット
+  remainingTime = 10;
+  updateTimerDisplay();
+
+  // 1秒ごとにカウントダウン
+  timerInterval = setInterval(() => {
+    remainingTime--;
+    updateTimerDisplay();
+
+    if (remainingTime <= 0) {
+      // 時間切れ → 次の問題へ（回答なしとして記録）
+      stopTimer();
+      currentQuestionIndex++;
+      showQuestion();
+    }
+  }, 1000);
+}
+
+// ========================================
+// タイマー停止
+// ========================================
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+// ========================================
+// タイマー表示更新
+// ========================================
+function updateTimerDisplay() {
+  const timerEl = document.getElementById('extraTimer');
+  const progressBar = document.getElementById('extraTimerProgressBar');
+
+  if (timerEl) {
+    timerEl.textContent = remainingTime;
+  }
+
+  if (progressBar) {
+    const percentage = (remainingTime / 10) * 100;
+    progressBar.style.width = percentage + '%';
+  }
 }
 
 // ========================================
