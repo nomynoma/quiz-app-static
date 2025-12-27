@@ -217,14 +217,14 @@ function showQuestion() {
     });
   }
 
-  // ナビゲーションボタンの状態更新
-  updateNavigationButtons();
+  // エクストラステージには前/次ボタンがないので、この呼び出しをコメントアウト
+  // updateNavigationButtons();
 
   // 回答状況インジケーター更新
   updateProgressIndicator();
 
-  // 採点ボタンの状態更新
-  updateSubmitButton();
+  // エクストラステージには採点ボタンがないので、この呼び出しをコメントアウト
+  // updateSubmitButton();
 }
 
 // ========================================
@@ -254,8 +254,9 @@ function updateNavigationButtons() {
   const prevBtn = document.getElementById('prevQuestionBtn');
   const nextBtn = document.getElementById('nextQuestionBtn');
 
-  prevBtn.disabled = currentQuestionIndex === 0;
-  nextBtn.disabled = currentQuestionIndex === questions.length - 1;
+  // エクストラステージには前/次ボタンがないので、nullチェック
+  if (prevBtn) prevBtn.disabled = currentQuestionIndex === 0;
+  if (nextBtn) nextBtn.disabled = currentQuestionIndex === questions.length - 1;
 }
 
 // ========================================
@@ -291,6 +292,9 @@ function updateProgressIndicator() {
 // ========================================
 function updateSubmitButton() {
   const submitBtn = document.getElementById('submitAllBtn');
+
+  // エクストラステージには採点ボタンがないので、nullチェック
+  if (!submitBtn) return;
 
   // 全問回答済みかチェック
   const allAnswered = userAnswers.every(ans => {
