@@ -242,7 +242,7 @@ function showQuestion() {
 // 回答チェックして次へ進む（エクストラステージ専用）
 // ========================================
 function checkAnswerAndProceed(question, selectedAnswer) {
-  // 正解をチェック（correctHashを使用）
+  // クライアント側でBase64ハッシュ比較
   const userAnswerHash = generateAnswerHashClient(selectedAnswer);
   const isCorrect = userAnswerHash === question.correctHash;
 
@@ -261,14 +261,27 @@ function checkAnswerAndProceed(question, selectedAnswer) {
 }
 
 // ========================================
-// クライアント側で回答ハッシュを生成（正誤判定用）
+// クライアント側で回答ハッシュを生成（Base64）
 // ========================================
 function generateAnswerHashClient(answer) {
-  // 配列の場合はソートして結合
+  let normalized;
+
   if (Array.isArray(answer)) {
-    return answer.slice().sort().join('###');
+    normalized = answer
+      .map(a => a.toString().trim().toUpperCase())
+      .sort()
+      .join(',');
+  } else {
+    normalized = answer.toString().trim().toUpperCase();
   }
-  return String(answer);
+
+  // Base64エンコード (UTF-8対応)
+  const utf8Bytes = new TextEncoder().encode(normalized);
+  let binary = '';
+  utf8Bytes.forEach(byte => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
 }
 
 // ========================================

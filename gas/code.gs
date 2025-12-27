@@ -780,18 +780,8 @@ function generateAnswerHash(answer) {
     normalized = answer.toString().trim().toUpperCase();
   }
 
-  var hash = Utilities.computeDigest(
-    Utilities.DigestAlgorithm.SHA_256,
-    normalized,
-    Utilities.Charset.UTF_8
-  );
-
-  var hashString = hash.map(function(byte) {
-    var v = (byte < 0) ? 256 + byte : byte;
-    return ('0' + v.toString(16)).slice(-2);
-  }).join('');
-
-  return hashString;
+  // Base64エンコードでハッシュ化
+  return Utilities.base64Encode(normalized);
 }
 
 function shuffleArray(array) {
