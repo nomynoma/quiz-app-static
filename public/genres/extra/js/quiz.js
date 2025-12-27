@@ -275,13 +275,8 @@ function generateAnswerHashClient(answer) {
     normalized = answer.toString().trim().toUpperCase();
   }
 
-  // Base64エンコード (UTF-8対応)
-  const utf8Bytes = new TextEncoder().encode(normalized);
-  let binary = '';
-  utf8Bytes.forEach(byte => {
-    binary += String.fromCharCode(byte);
-  });
-  return btoa(binary);
+  // Base64エンコード（GAS側と同じ方法）
+  return btoa(unescape(encodeURIComponent(normalized)));
 }
 
 // ========================================
