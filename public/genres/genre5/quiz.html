@@ -14,7 +14,7 @@
     <div class="header-area">
       <div class="header-row">
         <div class="header-left">
-          <button class="back-to-genre-btn" onclick="backToGenreSelection()">
+          <button id="backToGenreSelectionBtn" class="back-to-genre-btn">
             ← ジャンル選択へ
           </button>
         </div>
@@ -53,16 +53,16 @@
       <div id="choices"></div>
 
       <!-- スライダー風ナビゲーションボタン -->
-      <button id="prevQuestionBtn" class="slider-nav-btn slider-nav-left" onclick="previousQuestion()">
+      <button id="prevQuestionBtn" class="slider-nav-btn slider-nav-left">
         <span class="slider-nav-icon">‹</span>
       </button>
-      <button id="nextQuestionBtn" class="slider-nav-btn slider-nav-right" onclick="nextQuestion()">
+      <button id="nextQuestionBtn" class="slider-nav-btn slider-nav-right">
         <span class="slider-nav-icon">›</span>
       </button>
 
       <!-- 採点ボタンエリア -->
       <div id="navigation">
-        <button class="btn submit-all-btn" id="submitAllBtn" onclick="submitAllAnswers()">
+        <button class="btn submit-all-btn" id="submitAllBtn">
           採点する
         </button>
         <p class="description-text" style="font-size: 12px; color: #999;">
@@ -87,8 +87,8 @@
           合格証を発行します
         </p>
         <div class="button-area">
-          <button class="btn" onclick="goToPassPage()">合格証を見る</button>
-          <button class="btn btn-gray" onclick="backToGenreSelection()">ジャンル選択へ戻る</button>
+          <button id="goToPassPageBtn" class="btn">合格証を見る</button>
+          <button id="backToGenreSelectionFromPassBtn" class="btn btn-gray">ジャンル選択へ戻る</button>
         </div>
       </div>
 
@@ -105,9 +105,9 @@
 
         <!-- ボタンエリア -->
         <div class="button-area">
-          <button class="btn btn-twitter" onclick="shareFailToX()">𝕏 で共有する</button>
-          <button class="btn" onclick="retryLevel()">もう一度挑戦する</button>
-          <button class="btn btn-gray" onclick="backToGenreSelection()">ジャンル選択へ戻る</button>
+          <button id="shareFailToXBtn" class="btn btn-twitter">𝕏 で共有する</button>
+          <button id="retryLevelBtn" class="btn">もう一度挑戦する</button>
+          <button id="backToGenreSelectionFromFailBtn" class="btn btn-gray">ジャンル選択へ戻る</button>
         </div>
       </div>
     </div>

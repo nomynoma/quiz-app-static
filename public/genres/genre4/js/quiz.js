@@ -44,6 +44,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   currentLevel = level;
 
+  // イベントリスナーを設定
+  setupQuizPageEventListenersCommon({
+    backToGenreSelection: backToGenreSelection,
+    previousQuestion: previousQuestion,
+    nextQuestion: nextQuestion,
+    submitAllAnswers: submitAllAnswers,
+    goToPassPage: goToPassPage,
+    shareFailToX: shareFailToX
+  });
+
   // 問題を読み込み
   loadQuestions();
 });
@@ -55,19 +65,8 @@ async function loadQuestions() {
   showScreen('loading');
 
   try {
-    markPerformance('loadStart');
-
-    const userId = getBrowserId();
-
-    // 超級モードの判定
-    if (currentLevel === '超級') {
-      questions = await quizAPI.getUltraModeQuestions(GENRE_NAME, userId);
-    } else {
-      questions = await quizAPI.getQuestions(GENRE_NAME, currentLevel, userId);
-    }
-
-    markPerformance('loadEnd');
-    measurePerformance('loadStart', 'loadEnd');
+    // 共通API呼び出し
+    questions = await loadQuestionsCommon(GENRE_NAME, currentLevel);
 
     if (!questions || questions.length === 0) {
       alert('問題の取得に失敗しました。');
