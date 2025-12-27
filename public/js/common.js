@@ -703,8 +703,11 @@ async function loadQuestionsCommon(genreName, currentLevel) {
   const userId = getBrowserId();
 
   let questions;
-  // 超級モードの判定
-  if (currentLevel === '超級') {
+  // エクストラステージの判定
+  if (genreName === 'エクストラステージ') {
+    questions = await quizAPI.getExtraModeQuestions(userId);
+  } else if (currentLevel === '超級') {
+    // 超級モードの判定
     questions = await quizAPI.getUltraModeQuestions(genreName, userId);
   } else {
     questions = await quizAPI.getQuestions(genreName, currentLevel, userId);
