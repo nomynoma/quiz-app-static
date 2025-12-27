@@ -460,7 +460,7 @@ function downloadCertificateCommon(certificateImageData, genreName, level) {
   }
 
   const nickname = getNickname();
-  const fileName = `合格証_${nickname}_${genreName}_${level}.webp`;
+  const fileName = `合格証_${nickname}_${genreName}_${level}.jpg`;
 
   const link = document.createElement('a');
   link.href = certificateImageData;
@@ -792,7 +792,7 @@ async function generateCertificateCommon(genreNumber, genreName, quizResult) {
         height: 565
       });
 
-      const imageData = canvas.toDataURL('image/webp', 0.8);
+      const imageData = canvas.toDataURL('image/jpeg', 0.9);
       setCertificateImageData(imageData);
 
       // 合格証を表示

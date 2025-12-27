@@ -451,7 +451,7 @@ async function generateCertificateForModal(key, genreName, levelName, metadata) 
           height: 565
         });
 
-        const imageData = canvas.toDataURL('image/webp', 0.8);
+        const imageData = canvas.toDataURL('image/jpeg', 0.9);
         resolve(imageData);
       } catch (error) {
         reject(error);
@@ -481,8 +481,26 @@ function downloadCertificateFromModal() {
   const metadata = getCertificateMetadata('cert_' + currentCertificateKey);
   if (!metadata) return;
 
+  // ジャンル名とレベル名を取得
+  const genreNumber = currentCertificateKey.split('-')[0];
+  const levelNumber = currentCertificateKey.split('-')[1];
+
+  let genreName = '';
+  let levelName = '';
+
+  if (currentCertificateKey === 'ex') {
+    genreName = 'エクストラステージ';
+    levelName = 'エクストラ';
+  } else if (levelNumber === '4') {
+    genreName = GENRE_NAMES[parseInt(genreNumber) - 1];
+    levelName = '超級';
+  } else {
+    genreName = GENRE_NAMES[parseInt(genreNumber) - 1];
+    levelName = LEVEL_NAMES[parseInt(levelNumber) - 1];
+  }
+
   const img = document.getElementById('certificateModalImage');
-  const fileName = `合格証_${metadata.nickname}_${currentCertificateKey}.jpg`;
+  const fileName = `合格証_${metadata.nickname}_${genreName}_${levelName}.jpg`;
 
   // 画像をダウンロード
   const link = document.createElement('a');
