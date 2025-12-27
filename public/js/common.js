@@ -469,20 +469,6 @@ function downloadCertificateCommon(certificateImageData, genreName, level) {
 }
 
 /**
- * 合格証を別窓で開く
- * @param {string} certificateImageData - 合格証の画像データ（base64）
- */
-function openCertificateInNewTab(certificateImageData) {
-  if (!certificateImageData) {
-    alert('合格証画像が生成されていません。');
-    return;
-  }
-
-  // 画像データURLを直接新しいタブで開く
-  window.open(certificateImageData, '_blank');
-}
-
-/**
  * X（Twitter）で共有する
  * @param {string} genreName - ジャンル名
  * @param {string} level - レベル名
@@ -602,13 +588,6 @@ function getCertificateImageData() {
  */
 function setupPassPageEventListenersCommon(genreName, quizResult) {
   setupCommonEventListeners({
-    certificateDisplayImage: function() {
-      // クリック時にDOM要素から直接src属性を取得
-      const imgElement = document.getElementById('certificateDisplayImage');
-      const imageData = imgElement ? imgElement.src : null;
-      console.log('certificateImageData:', imageData ? 'データあり' : 'null');
-      openCertificateInNewTab(imageData);
-    },
     downloadCertificateBtn: function() {
       downloadCertificateCommon(getCertificateImageData(), genreName, quizResult.level);
     },
@@ -802,6 +781,12 @@ async function generateCertificateCommon(genreNumber, genreName, quizResult) {
 
       // 合格証を表示
       document.getElementById('certificateDisplayImage').src = imageData;
+
+      // リンクにもセット（クリックで別タブ表示）
+      const certLink = document.getElementById('certificateLink');
+      if (certLink) {
+        certLink.href = imageData;
+      }
 
       // メタデータを保存
       saveCertificateMetadata(`cert_${mapKey}`, nickname, dateStr);
