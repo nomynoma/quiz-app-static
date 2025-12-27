@@ -133,6 +133,12 @@ function unlockExtraStage() {
     }
   }
 
+  // エクストラステージの合格証も生成
+  if (typeof saveCertificateMetadata === 'function') {
+    saveCertificateMetadata('cert_ex', nickname, date);
+    console.log(`✅ エクストラステージの合格証を生成: cert_ex`);
+  }
+
   console.log('✨ エクストラステージが出現しました！');
   console.log('🔄 ページをリロードしてください');
 

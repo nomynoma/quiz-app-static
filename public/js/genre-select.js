@@ -206,12 +206,11 @@ function initializeExtraStageButton() {
   if (allUltraUnlocked) {
     container.innerHTML = '';
     container.style.display = 'block';
+    container.style.marginTop = '30px';
 
     const extraBtn = document.createElement('button');
-    extraBtn.className = 'btn btn-ranking';
+    extraBtn.className = 'btn btn-ranking extra-stage-btn';
     extraBtn.textContent = '🌟 エクストラステージに挑戦';
-    extraBtn.style.marginTop = '30px';
-    extraBtn.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
     extraBtn.onclick = function() {
       goToQuiz('エクストラステージ', 'エクストラ');
     };
@@ -220,16 +219,12 @@ function initializeExtraStageButton() {
     const extraCertMetadata = getCertificateMetadata('cert_ex');
     if (extraCertMetadata) {
       const badgeWrapper = document.createElement('div');
-      badgeWrapper.style.position = 'relative';
-      badgeWrapper.style.display = 'inline-block';
+      badgeWrapper.className = 'extra-stage-wrapper';
 
       const badgeMedal = document.createElement('span');
       badgeMedal.className = 'certificate-medal';
       badgeMedal.title = 'エクストラステージ合格証を表示';
       badgeMedal.textContent = '🏅';
-      badgeMedal.style.position = 'absolute';
-      badgeMedal.style.top = '-10px';
-      badgeMedal.style.right = '-10px';
       badgeMedal.onclick = function(e) {
         e.stopPropagation();
         openCertificateModal('ex');
@@ -313,7 +308,7 @@ function resetLocalStorage() {
 // ========================================
 // 合格証モーダルを開く
 // ========================================
-function openCertificateModal(key) {
+async function openCertificateModal(key) {
   const metadata = getCertificateMetadata('cert_' + key);
 
   if (!metadata) {
@@ -328,13 +323,21 @@ function openCertificateModal(key) {
   const levelNumber = key.split('-')[1];
 
   let title = '';
+  let genreName = '';
+  let levelName = '';
+
   if (key === 'ex') {
     title = 'エクストラステージ合格証';
+    genreName = 'エクストラステージ';
+    levelName = '';
   } else if (levelNumber === '4') {
-    title = GENRE_NAMES[parseInt(genreNumber) - 1] + ' 超級合格証';
+    genreName = GENRE_NAMES[parseInt(genreNumber) - 1];
+    levelName = '超級';
+    title = genreName + ' ' + levelName + '合格証';
   } else {
-    const levelName = LEVEL_NAMES[parseInt(levelNumber) - 1];
-    title = GENRE_NAMES[parseInt(genreNumber) - 1] + ' ' + levelName + '合格証';
+    genreName = GENRE_NAMES[parseInt(genreNumber) - 1];
+    levelName = LEVEL_NAMES[parseInt(levelNumber) - 1];
+    title = genreName + ' ' + levelName + '合格証';
   }
 
   document.getElementById('certificateModalTitle').textContent = title;
@@ -343,20 +346,122 @@ function openCertificateModal(key) {
     <p><strong>取得日:</strong> ${metadata.date}</p>
   `;
 
-  // 合格証画像を生成して表示
-  let bgImageUrl;
-  if (key === 'ex') {
-    // エクストラステージは固定の背景画像
-    bgImageUrl = CERTIFICATE_BG_IMAGE_MAP['ALL'] || CERTIFICATE_BG_IMAGE_MAP['1-1'];
-  } else {
-    bgImageUrl = getCertificateBgImageUrl(
-      GENRE_NAMES[parseInt(genreNumber) - 1] || 'ジャンル1',
-      LEVEL_NAMES[parseInt(levelNumber) - 1] || '初級'
-    );
-  }
-
-  document.getElementById('certificateModalImage').src = bgImageUrl;
+  // モーダルを表示（画像生成中）
+  document.getElementById('certificateModalImage').src = '';
   document.getElementById('certificateModal').style.display = 'flex';
+
+  // 合格証画像を生成
+  try {
+    const imageData = await generateCertificateForModal(key, genreName, levelName, metadata);
+    document.getElementById('certificateModalImage').src = imageData;
+  } catch (error) {
+    console.error('合格証生成エラー:', error);
+    alert('合格証の生成に失敗しました: ' + error.message);
+    closeCertificateModal();
+  }
+}
+
+// ========================================
+// 合格証画像を生成（モーダル用）
+// ========================================
+async function generateCertificateForModal(key, genreName, levelName, metadata) {
+  return new Promise((resolve, reject) => {
+    // 背景画像URLを取得
+    let bgImageUrl;
+    if (key === 'ex') {
+      // エクストラステージは固定の背景画像
+      bgImageUrl = CERTIFICATE_BG_IMAGE_MAP['ALL'] || CERTIFICATE_BG_IMAGE_MAP['1-1'];
+    } else {
+      const mapKey = key;
+      bgImageUrl = CERTIFICATE_BG_IMAGE_MAP[mapKey] || CERTIFICATE_BG_IMAGE_MAP['1-1'];
+    }
+
+    // genre-select.htmlはpublic/直下にあるため、相対パスを調整
+    // ../../imgs/ を imgs/ に変換
+    bgImageUrl = bgImageUrl.replace('../../imgs/', 'imgs/');
+
+    // キャプチャ用エリアに設定
+    document.getElementById('captureImage').src = bgImageUrl;
+
+    // ジャンル別のCSSクラスを決定
+    let genreClass = '';
+    if (key === 'ex') {
+      genreClass = 'certificate-extra';
+    } else {
+      const genreNumber = key.split('-')[0];
+      genreClass = `certificate-genre${genreNumber}`;
+    }
+
+    // captureTextエリアにジャンル別クラスを追加
+    const captureTextElement = document.getElementById('captureText');
+    captureTextElement.className = `certificate-text ${genreClass}`;
+
+    // 合格証のテキスト内容
+    let certificateText = '';
+    if (key === 'ex') {
+      certificateText = `
+        <div class="certificate-title">
+          合格証明書
+        </div>
+        <div class="certificate-name">
+          ${metadata.nickname}
+        </div>
+        <div class="certificate-body">
+          上記の者は<br>
+          エクストラステージ<br>
+          全問正解したことを証明します
+        </div>
+        <div class="certificate-date">
+          ${metadata.date}
+        </div>
+      `;
+    } else {
+      certificateText = `
+        <div class="certificate-title">
+          合格証明書
+        </div>
+        <div class="certificate-name">
+          ${metadata.nickname}
+        </div>
+        <div class="certificate-body">
+          上記の者は<br>
+          ${genreName} ${levelName}<br>
+          に合格したことを証明します
+        </div>
+        <div class="certificate-date">
+          ${metadata.date}
+        </div>
+      `;
+    }
+
+    captureTextElement.innerHTML = certificateText;
+
+    // 画像読み込み待機
+    const img = document.getElementById('captureImage');
+    img.onload = async function() {
+      try {
+        // html2canvasで画像化
+        const captureArea = document.getElementById('captureArea');
+        const canvas = await html2canvas(captureArea, {
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          scale: 2,
+          width: 800,
+          height: 565
+        });
+
+        const imageData = canvas.toDataURL('image/webp', 0.8);
+        resolve(imageData);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    img.onerror = function() {
+      reject(new Error('背景画像の読み込みに失敗しました: ' + bgImageUrl));
+    };
+  });
 }
 
 // ========================================

@@ -745,21 +745,34 @@ async function generateCertificateCommon(genreNumber, genreName, quizResult) {
   // 背景画像URLを取得
   const bgImageUrl = CERTIFICATE_BG_IMAGE_MAP[mapKey] || CERTIFICATE_BG_IMAGE_MAP['1-1'];
 
+  // ジャンル別のCSSクラスを決定
+  let genreClass = '';
+  if (genreNumber === 7 || genreName === 'エクストラステージ' || genreName === 'エキストラステージ') {
+    genreClass = 'certificate-extra';
+  } else {
+    genreClass = `certificate-genre${genreNumber}`;
+  }
+
   // キャプチャ用エリアに設定
   document.getElementById('captureImage').src = bgImageUrl;
-  document.getElementById('captureText').innerHTML = `
-    <div style="font-size: 36px; font-weight: bold; margin-bottom: 20px;">
+
+  // captureTextエリアにジャンル別クラスを追加
+  const captureTextElement = document.getElementById('captureText');
+  captureTextElement.className = `certificate-text ${genreClass}`;
+
+  captureTextElement.innerHTML = `
+    <div class="certificate-title">
       合格証明書
     </div>
-    <div style="font-size: 24px; margin-bottom: 30px;">
+    <div class="certificate-name">
       ${nickname}
     </div>
-    <div style="font-size: 18px; line-height: 1.8;">
+    <div class="certificate-body">
       上記の者は<br>
       ${genreName} ${quizResult.level}<br>
       に合格したことを証明します
     </div>
-    <div style="font-size: 16px; margin-top: 40px;">
+    <div class="certificate-date">
       ${dateStr}
     </div>
   `;

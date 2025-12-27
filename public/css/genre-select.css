@@ -1,0 +1,66 @@
+/* ========================================
+   ジャンル選択画面専用スタイル
+   ======================================== */
+
+/* エクストラステージボタンのラッパー */
+.extra-stage-wrapper {
+  position: relative;
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+/* エクストラステージボタン */
+.extra-stage-btn {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* 合格証メダルバッジ（エクストラステージ専用） */
+.extra-stage-wrapper .certificate-medal {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 32px;
+  cursor: pointer;
+}
+
+/* 合格証テキストスタイル（モーダル用） */
+.certificate-title {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.certificate-name {
+  font-size: 24px;
+  margin-bottom: 30px;
+}
+
+.certificate-body {
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.certificate-date {
+  font-size: 16px;
+  margin-top: 40px;
+}
+
+/* リセットボタンセクション */
+.reset-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.reset-btn {
+  font-size: 14px;
+  padding: 10px 20px;
+  min-width: auto;
+}
+
+.reset-notice {
+  font-size: 12px;
+  color: #999;
+  margin-top: 10px;
+}

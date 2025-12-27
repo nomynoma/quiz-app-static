@@ -6,6 +6,7 @@
   <title>ジャンル選択 - クイズアプリ</title>
   <link rel="icon" href="imgs/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/genre-select.css">
 </head>
 <body>
   <!-- ヘッダーエリア -->
@@ -44,11 +45,11 @@
       </button>
 
       <!-- リセットボタン -->
-      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
-        <button class="btn btn-gray" onclick="resetLocalStorage()" style="font-size: 14px; padding: 10px 20px; min-width: auto;">
+      <div class="reset-section">
+        <button class="btn btn-gray reset-btn" onclick="resetLocalStorage()">
           🔄 ローカルデータをリセット
         </button>
-        <p style="font-size: 12px; color: #999; margin-top: 10px;">
+        <p class="reset-notice">
           ※ニックネーム・合格証・スコアなどの保存データが削除されます
         </p>
       </div>
@@ -71,6 +72,19 @@
       </div>
     </div>
   </div>
+
+  <!-- キャプチャ用固定サイズ合格証エリア（画面外） -->
+  <div id="captureArea" class="capture-area-production">
+    <div class="result-background capture-background">
+      <img id="captureImage" src="" alt="合格証明書" class="result-bg-image capture-image">
+      <div class="result-overlay">
+        <div id="captureText" class="certificate-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- html2canvas for certificate generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <!-- 共通ライブラリ -->
   <script src="js/config.js"></script>
