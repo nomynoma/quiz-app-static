@@ -51,6 +51,7 @@ async function loadRankingData() {
 async function loadHallOfFame() {
   try {
     const result = await quizAPI.getHallOfFame();
+    console.log('殿堂入りデータ:', result);
 
     const hallOfFameList = document.getElementById('hallOfFameList');
     hallOfFameList.innerHTML = '';
@@ -64,16 +65,31 @@ async function loadHallOfFame() {
       const item = document.createElement('div');
       item.className = 'ranking-item';
 
-      let medal = '';
-      if (index === 0) medal = '🥇';
-      else if (index === 1) medal = '🥈';
-      else if (index === 2) medal = '🥉';
-      else medal = `${index + 1}位`;
+      // 順位表示（メダルまたは数字）
+      let rankText = '';
+      if (index === 0) rankText = '🥇';
+      else if (index === 1) rankText = '🥈';
+      else if (index === 2) rankText = '🥉';
+      else rankText = `${index + 1}位`;
+
+      // 時間表示（ミリ秒を日本語形式に変換）
+      let timeText = '';
+      if (entry.time) {
+        const totalSeconds = Math.floor(entry.time / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        if (hours > 0) timeText += `${hours}時間`;
+        if (minutes > 0 || hours > 0) timeText += `${minutes}分`;
+        timeText += `${seconds}秒`;
+      }
 
       item.innerHTML = `
-        <div class="ranking-rank">${medal}</div>
+        <div class="ranking-rank">${rankText}</div>
         <div class="ranking-info">
           <div class="ranking-nickname">${entry.nickname}</div>
+          ${timeText ? `<div class="ranking-time">クリアタイム: ${timeText}</div>` : ''}
           <div class="ranking-date">${entry.completionDate || '日付不明'}</div>
         </div>
       `;
@@ -88,15 +104,13 @@ async function loadHallOfFame() {
 }
 
 // ========================================
-// TOP10挑戦者読み込み
+// TOP10挑戦者読み込み（エクストラステージ専用）
 // ========================================
 async function loadTopChallengers() {
-  const genreNumber = parseInt(document.getElementById('genreSelect').value);
-  const level = document.getElementById('levelSelect').value;
-
   try {
-    const genre = GENRE_NAMES[genreNumber - 1];
-    const result = await quizAPI.getTopChallengers(genre, level);
+    // エクストラステージ固定
+    const result = await quizAPI.getTopChallengers('エクストラステージ', '');
+    console.log('TOP10挑戦者データ:', result);
 
     const topChallengersList = document.getElementById('topChallengersList');
     topChallengersList.innerHTML = '';
@@ -110,20 +124,21 @@ async function loadTopChallengers() {
       const item = document.createElement('div');
       item.className = 'ranking-item';
 
-      let medal = '';
-      if (index === 0) medal = '🥇';
-      else if (index === 1) medal = '🥈';
-      else if (index === 2) medal = '🥉';
-      else medal = `${index + 1}位`;
+      // 順位表示（メダルまたは数字）
+      let rankText = '';
+      if (index === 0) rankText = '🥇';
+      else if (index === 1) rankText = '🥈';
+      else if (index === 2) rankText = '🥉';
+      else rankText = `${index + 1}位`;
 
       // 時間をフォーマット
       const timeStr = formatTime(entry.clearTime);
 
       item.innerHTML = `
-        <div class="ranking-rank">${medal}</div>
+        <div class="ranking-rank">${rankText}</div>
         <div class="ranking-info">
           <div class="ranking-nickname">${entry.nickname}</div>
-          <div class="ranking-time">クリアタイム: ${timeStr}</div>
+          <div class="ranking-time">${entry.score}問正解（${timeStr}）</div>
           <div class="ranking-date">${entry.date || '日付不明'}</div>
         </div>
       `;

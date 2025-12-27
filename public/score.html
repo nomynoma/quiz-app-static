@@ -52,7 +52,7 @@
       <!-- 殿堂入りタブ -->
       <div class="ranking-tab-content active" id="hallOfFameTab">
         <p class="description-text">
-          全ジャンル上級をクリアした偉大なる挑戦者たち
+          エクストラステージ全問正解した偉大なる挑戦者たち
         </p>
         <div id="hallOfFameList" class="ranking-list"></div>
       </div>
@@ -60,25 +60,8 @@
       <!-- TOP10挑戦者タブ -->
       <div class="ranking-tab-content" id="topChallengersTab">
         <p class="description-text">
-          最速クリアタイムでランクインした挑戦者たち
+          エクストラステージで最も多くの問題を正解した挑戦者たち
         </p>
-
-        <!-- ジャンル選択 -->
-        <div class="genre-selector">
-          <select id="genreSelect" onchange="loadTopChallengers()">
-            <option value="1">ジャンル1</option>
-            <option value="2">ジャンル2</option>
-            <option value="3">ジャンル3</option>
-            <option value="4">ジャンル4</option>
-            <option value="5">ジャンル5</option>
-            <option value="6">ジャンル6</option>
-          </select>
-          <select id="levelSelect" onchange="loadTopChallengers()">
-            <option value="初級">初級</option>
-            <option value="中級">中級</option>
-            <option value="上級">上級</option>
-          </select>
-        </div>
 
         <div id="topChallengersList" class="ranking-list"></div>
       </div>

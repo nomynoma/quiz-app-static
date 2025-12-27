@@ -1016,35 +1016,32 @@ function getHallOfFame() {
 // ========================================
 // API: getTopChallengers - TOP10挑戦者取得
 // ========================================
+// エクストラステージTOP10挑戦者取得
+// ========================================
 function getTopChallengers(genre, level) {
   try {
     var cache = CacheService.getScriptCache();
-    var cacheKey = 'topChallengers_' + genre + '_' + level;
+    var cacheKey = 'topChallengers_extra';
 
     // キャッシュから取得を試みる
     var cached = cache.get(cacheKey);
     if (cached) {
-      Logger.log('getTopChallengers: キャッシュから取得 (' + genre + ' ' + level + ')');
+      Logger.log('getTopChallengers: キャッシュから取得（エクストラステージ）');
       return JSON.parse(cached);
     }
 
-    Logger.log('getTopChallengers: データベースから取得 (' + genre + ' ' + level + ')');
+    Logger.log('getTopChallengers: データベースから取得（エクストラステージ）');
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('スコアランキング');
 
     if (!sheet) {
       return {
-        genre: genre,
-        level: level,
         topChallengers: []
       };
     }
 
     var data = sheet.getDataRange().getValues();
     var challengersList = [];
-
-    // ジャンル×レベルの検索文字列（例: "ジャンル1 初級"）
-    var genreLevelKey = genre + ' ' + level;
 
     // ヘッダー行をスキップ（i=1から開始）
     // 列: A=browserId, B=nickname, C=score, D=timestamp, E=genre, F=isPerfect, G=time
@@ -1053,33 +1050,30 @@ function getTopChallengers(genre, level) {
       if (!row[0]) continue; // 空行スキップ
 
       var rowGenre = row[4]; // E列: genre
+      var score = row[2]; // C列: score（正解数）
+      var timestamp = row[3]; // D列: timestamp
+      var time = row[6] || null; // G列: time
 
-      // 指定したジャンル×レベルのみ抽出
-      if (rowGenre === genreLevelKey) {
-        var browserId = row[0];
-        var nickname = row[1];
-        var score = row[2];
-        var timestamp = row[3];
-        var isPerfect = row[5];
-        var time = row[6] || null;
-
-        // 満点（isPerfect=true）のデータのみ
-        if (isPerfect === true && time !== null) {
-          challengersList.push({
-            browserId: browserId,
-            nickname: nickname,
-            clearTime: time / 1000, // ミリ秒を秒に変換
-            date: formatDate(timestamp),
-            timestamp: timestamp
-          });
-        }
+      // エクストラステージのみ抽出（全問正解者は除く＝殿堂入りと重複しない）
+      if (rowGenre === 'エクストラステージ' && time !== null) {
+        challengersList.push({
+          browserId: row[0],
+          nickname: row[1],
+          score: score, // 正解数
+          clearTime: time / 1000, // ミリ秒を秒に変換
+          date: formatDate(timestamp),
+          timestamp: timestamp
+        });
       }
     }
 
-    // クリアタイムの短い順にソート（タイムが同じ場合はタイムスタンプの早い順）
+    // スコア（正解数）の多い順、同スコアならタイムの短い順にソート
     challengersList.sort(function(a, b) {
+      if (a.score !== b.score) {
+        return b.score - a.score; // スコアの降順（多い順）
+      }
       if (a.clearTime !== b.clearTime) {
-        return a.clearTime - b.clearTime;
+        return a.clearTime - b.clearTime; // タイムの昇順（短い順）
       }
       return new Date(a.timestamp) - new Date(b.timestamp);
     });
@@ -1088,8 +1082,6 @@ function getTopChallengers(genre, level) {
     var top10 = challengersList.slice(0, 10);
 
     var result = {
-      genre: genre,
-      level: level,
       topChallengers: top10
     };
 
@@ -1101,8 +1093,6 @@ function getTopChallengers(genre, level) {
   } catch (error) {
     Logger.log('getTopChallengers エラー: ' + error);
     return {
-      genre: genre,
-      level: level,
       topChallengers: [],
       error: error.toString()
     };
@@ -1119,16 +1109,8 @@ function clearRankingCache() {
     // 殿堂入りキャッシュをクリア
     cache.remove('hallOfFame');
 
-    // TOP10挑戦者キャッシュをクリア（全ジャンル×全レベル）
-    var genres = GENRES;
-    var levels = LEVELS;
-
-    for (var i = 0; i < genres.length; i++) {
-      for (var j = 0; j < levels.length; j++) {
-        var cacheKey = 'topChallengers_' + genres[i] + '_' + levels[j];
-        cache.remove(cacheKey);
-      }
-    }
+    // TOP10挑戦者キャッシュをクリア（エクストラステージ専用）
+    cache.remove('topChallengers_extra');
 
     Logger.log('ランキングキャッシュをクリアしました');
   } catch (error) {

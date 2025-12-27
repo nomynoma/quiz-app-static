@@ -1136,3 +1136,212 @@ h1 {
     transform: translateX(10px);
   }
 }
+
+/* ========================================
+   ランキング画面のスタイル
+   ======================================== */
+
+/* タブ切替ボタン */
+.ranking-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0;
+  justify-content: center;
+  border-bottom: 3px solid #ddd;
+}
+
+.tab-btn {
+  padding: 15px 40px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  bottom: -3px;
+}
+
+.tab-btn:hover {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.tab-btn.active {
+  color: #667eea;
+  border-bottom: 3px solid #667eea;
+  background: white;
+}
+
+/* タブコンテンツ */
+.ranking-tab-content {
+  display: none;
+  padding-top: 30px;
+}
+
+.ranking-tab-content.active {
+  display: block;
+}
+
+/* 説明文 */
+.description-text {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* ジャンル選択エリア */
+.genre-selector {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.genre-selector select {
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.genre-selector select:hover {
+  border-color: #667eea;
+}
+
+.genre-selector select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* ランキングリスト全体 */
+.ranking-list {
+  margin: 20px 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ランキングアイテム（各行） */
+.ranking-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.ranking-item:hover {
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  transform: translateY(-2px);
+}
+
+/* 順位表示 */
+.ranking-rank {
+  font-size: 20px;
+  font-weight: bold;
+  color: #666;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* 1位・2位・3位のメダル色 */
+.ranking-item:nth-child(1) .ranking-rank {
+  color: #ffa500; /* 金 */
+  font-size: 24px;
+}
+
+.ranking-item:nth-child(2) .ranking-rank {
+  color: #c0c0c0; /* 銀 */
+  font-size: 22px;
+}
+
+.ranking-item:nth-child(3) .ranking-rank {
+  color: #cd7f32; /* 銅 */
+  font-size: 22px;
+}
+
+/* ニックネーム・情報エリア */
+.ranking-info {
+  flex: 1;
+  text-align: left;
+  padding: 0 15px;
+}
+
+.ranking-nickname {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.ranking-date,
+.ranking-time {
+  font-size: 13px;
+  color: #999;
+}
+
+/* データがない場合 */
+.no-data-text {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+/* エラー表示 */
+.error-text {
+  text-align: center;
+  color: #e74c3c;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+/* スマホ対応 */
+@media (max-width: 600px) {
+  .tab-btn {
+    padding: 12px 25px;
+    font-size: 14px;
+  }
+
+  .genre-selector {
+    flex-direction: column;
+  }
+
+  .ranking-item {
+    padding: 12px 15px;
+  }
+
+  .ranking-rank {
+    min-width: 50px;
+    font-size: 18px;
+  }
+
+  .ranking-item:nth-child(1) .ranking-rank {
+    font-size: 22px;
+  }
+
+  .ranking-item:nth-child(2) .ranking-rank,
+  .ranking-item:nth-child(3) .ranking-rank {
+    font-size: 20px;
+  }
+
+  .ranking-nickname {
+    font-size: 14px;
+  }
+
+  .ranking-date,
+  .ranking-time {
+    font-size: 12px;
+  }
+}
