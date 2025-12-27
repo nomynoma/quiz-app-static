@@ -478,11 +478,8 @@ function openCertificateInNewTab(certificateImageData) {
     return;
   }
 
-  // 新しいタブで画像を直接開く
-  const newTab = window.open();
-  if (newTab) {
-    newTab.location.href = certificateImageData;
-  }
+  // 画像データURLを直接新しいタブで開く
+  window.open(certificateImageData, '_blank');
 }
 
 /**
