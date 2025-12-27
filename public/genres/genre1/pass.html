@@ -24,22 +24,21 @@
             src=""
             alt="合格証明書"
             class="certificate-display-image"
-            title="クリックで別窓表示"
-            onclick="openCertificateInNewTab()">
+            title="クリックで別窓表示">
       </div>
 
       <!-- ボタンエリア -->
       <div class="button-area">
-        <button class="btn btn-green" onclick="downloadCertificate()">📥 合格証をダウンロード</button>
-        <button class="btn btn-twitter" onclick="shareToX()">𝕏 で共有する</button>
-        <button class="btn" id="nextLevelBtn" onclick="nextLevel()" style="display: none;">次のレベルへすすむ</button>
-        <button class="btn btn-gray" onclick="backToGenreSelection()">ジャンル選択へ戻る</button>
+        <button class="btn btn-green" id="downloadCertificateBtn">📥 合格証をダウンロード</button>
+        <button class="btn btn-twitter" id="shareToXBtn">𝕏 で共有する</button>
+        <button class="btn" id="nextLevelBtn" style="display: none;">次のレベルへすすむ</button>
+        <button class="btn btn-gray" id="backToGenreSelectionBtn">ジャンル選択へ戻る</button>
       </div>
     </div>
 
     <!-- ローディング画面 -->
     <div class="screen" id="loading">
-      <div class="loading">合格証を生成しています...</div>
+      <div id="loadingText" class="loading">合格証を生成しています...</div>
     </div>
   </div>
 

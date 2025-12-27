@@ -347,23 +347,11 @@ function showResult(score, total, wrongAnswers) {
   showScreen('resultScreen');
 
   // ヘッダーを非表示
-  document.querySelector('.progress-indicator-header').style.display = 'none';
+  document.getElementById('progressIndicatorHeader').style.display = 'none';
   document.getElementById('questionNumberHeader').textContent = '';
 
   if (score === total) {
-    // 全問正解 → 合格表示
-    document.getElementById('passResult').style.display = 'block';
-    document.getElementById('failResult').style.display = 'none';
-
-    document.getElementById('passResultText').innerHTML = `
-      <div style="font-size: 48px; font-weight: bold; color: #27ae60; margin: 20px 0;">
-        ${score} / ${total}
-      </div>
-      <p style="font-size: 18px; color: #666;">
-        全問正解！おめでとうございます！
-      </p>
-    `;
-
+    // 全問正解 → 合格証ページへ直接遷移
     // sessionStorageに結果を保存（pass.htmlで使用）
     sessionStorage.setItem('quizResult', JSON.stringify({
       genre: GENRE_NAME,
@@ -373,6 +361,9 @@ function showResult(score, total, wrongAnswers) {
       total: total,
       wrongAnswers: wrongAnswers
     }));
+
+    // 合格証ページへ遷移
+    window.location.href = 'pass.html';
 
   } else {
     // 不正解あり → 不合格表示
@@ -393,54 +384,7 @@ function showResult(score, total, wrongAnswers) {
   }
 }
 
-// ========================================
-// 誤答一覧表示
-// ========================================
-function displayWrongAnswers(wrongAnswers) {
-  const wrongAnswersList = document.getElementById('wrongAnswersList');
-
-  if (!wrongAnswers || wrongAnswers.length === 0) {
-    wrongAnswersList.style.display = 'none';
-    return;
-  }
-
-  wrongAnswersList.innerHTML = '<h2 style="font-size: 18px; margin-top: 30px; margin-bottom: 15px;">📋 間違えた問題</h2>';
-
-  wrongAnswers.forEach(wrong => {
-    const wrongItem = document.createElement('div');
-    wrongItem.className = 'wrong-answer-item';
-
-    let html = `
-      <div class="wrong-answer-header">
-        <strong>問題 ${wrong.questionNumber}</strong>
-      </div>
-      <div class="wrong-answer-body">
-        <p class="wrong-answer-question">${wrong.question || '（問題文なし）'}</p>
-        <p class="wrong-answer-user">
-          <strong>あなたの回答:</strong> ${wrong.userAnswer}
-        </p>
-    `;
-
-    if (wrong.hintText) {
-      html += `<p class="wrong-answer-hint"><strong>ヒント:</strong> ${wrong.hintText}</p>`;
-    }
-
-    if (wrong.hintUrl) {
-      html += `
-        <p class="wrong-answer-link">
-          <a href="${wrong.hintUrl}" target="_blank" rel="noopener noreferrer">
-            📖 解説ページを見る
-          </a>
-        </p>
-      `;
-    }
-
-    html += '</div>';
-
-    wrongItem.innerHTML = html;
-    wrongAnswersList.appendChild(wrongItem);
-  });
-}
+// displayWrongAnswers() は common.js に移動済み
 
 // ========================================
 // 合格証ページへ遷移
@@ -453,7 +397,6 @@ function goToPassPage() {
 // X共有（不合格時）
 // ========================================
 function shareFailToX() {
-  // 現在の結果から取得
   const failResultText = document.getElementById('failResultText');
   const scoreMatch = failResultText.textContent.match(/(\d+)\s*\/\s*(\d+)/);
 
@@ -462,35 +405,7 @@ function shareFailToX() {
   const score = scoreMatch[1];
   const total = scoreMatch[2];
 
-  const text = `クイズアプリで${GENRE_NAME}の${currentLevel}に挑戦したよ！${score}/${total}問正解！君も挑戦してみよう！`;
-  const url = getAppBaseUrl();
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-
-  window.open(twitterUrl, '_blank', 'width=550,height=420');
+  shareToXCommon(GENRE_NAME, currentLevel, false, score, total);
 }
 
-// ========================================
-// もう一度挑戦する
-// ========================================
-function retryLevel() {
-  // ページをリロードして最初から
-  window.location.reload();
-}
-
-// ========================================
-// ジャンル選択画面へ戻る
-// ========================================
-function backToGenreSelection() {
-  if (confirm('クイズを中断してジャンル選択に戻りますか？')) {
-    window.location.href = '../../genre-select.html';
-  }
-}
-
-// ========================================
-// 画面切替
-// ========================================
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(id);
-  if (el) el.classList.add('active');
-}
+// retryLevel(), backToGenreSelection(), showScreen() は common.js に移動済み

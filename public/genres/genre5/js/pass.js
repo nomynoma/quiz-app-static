@@ -15,20 +15,46 @@ document.addEventListener('DOMContentLoaded', function() {
   // クイズ結果を取得
   const resultStr = sessionStorage.getItem('quizResult');
 
+  console.log('sessionStorage quizResult:', resultStr);
+
   if (!resultStr) {
-    alert('クイズ結果が見つかりません。');
+    alert('クイズ結果が見つかりません。\nquiz.htmlで合格後に「合格証を見る」ボタンを押してください。');
     window.location.href = '../../genre-select.html';
     return;
   }
 
-  quizResult = JSON.parse(resultStr);
+  try {
+    quizResult = JSON.parse(resultStr);
+    console.log('Parsed quizResult:', quizResult);
+  } catch (e) {
+    console.error('Failed to parse quizResult:', e);
+    alert('クイズ結果の読み込みに失敗しました。');
+    window.location.href = '../../genre-select.html';
+    return;
+  }
 
   // 結果を表示
   displayResult();
 
   // 合格証を生成
   generateCertificate();
+
+  // イベントリスナーを設定
+  setupPassPageEventListeners();
 });
+
+// ========================================
+// イベントリスナー設定
+// ========================================
+function setupPassPageEventListeners() {
+  setupCommonEventListeners({
+    certificateDisplayImage: () => openCertificateInNewTab(certificateImageData),
+    downloadCertificateBtn: downloadCertificate,
+    shareToXBtn: shareToX,
+    nextLevelBtn: nextLevel,
+    backToGenreSelectionBtn: backToGenreSelection
+  });
+}
 
 // ========================================
 // 結果表示
@@ -170,42 +196,14 @@ async function generateCertificate() {
 // 合格証をダウンロード
 // ========================================
 function downloadCertificate() {
-  if (!certificateImageData) {
-    alert('合格証画像が生成されていません。');
-    return;
-  }
-
-  const nickname = getNickname();
-  const fileName = `合格証_${nickname}_${GENRE_NAME}_${quizResult.level}.webp`;
-
-  const link = document.createElement('a');
-  link.href = certificateImageData;
-  link.download = fileName;
-  link.click();
-}
-
-// ========================================
-// 合格証を別窓で開く
-// ========================================
-function openCertificateInNewTab() {
-  if (!certificateImageData) {
-    alert('合格証画像が生成されていません。');
-    return;
-  }
-
-  window.open(certificateImageData, '_blank');
+  downloadCertificateCommon(certificateImageData, GENRE_NAME, quizResult.level);
 }
 
 // ========================================
 // X共有
 // ========================================
 function shareToX() {
-  const levelText = quizResult.level === '超級' ? '超級全問正解' : `${quizResult.level}合格`;
-  const text = `クイズアプリで${GENRE_NAME}の${levelText}しました！君も挑戦してみよう！`;
-  const url = getAppBaseUrl();
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-
-  window.open(twitterUrl, '_blank', 'width=550,height=420');
+  shareToXCommon(GENRE_NAME, quizResult.level, true);
 }
 
 // ========================================
@@ -236,16 +234,7 @@ function nextLevel() {
 // ジャンル選択へ戻る
 // ========================================
 function backToGenreSelection() {
-  // sessionStorageをクリア
-  sessionStorage.removeItem('quizResult');
-  window.location.href = '../../genre-select.html';
+  backToGenreSelectionFromPass();
 }
 
-// ========================================
-// 画面切替
-// ========================================
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(id);
-  if (el) el.classList.add('active');
-}
+// showScreen() は common.js に移動済み
