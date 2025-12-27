@@ -153,7 +153,7 @@ async function loadTopChallengers() {
 }
 
 // ========================================
-// 時間フォーマット
+// 時間フォーマット（ミリ秒まで表示）
 // ========================================
 function formatTime(seconds) {
   if (!seconds || seconds <= 0) {
@@ -162,11 +162,12 @@ function formatTime(seconds) {
 
   const minutes = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
+  const ms = Math.floor((seconds % 1) * 1000);
 
   if (minutes > 0) {
-    return `${minutes}分${secs}秒`;
+    return `${minutes}分${secs}.${ms.toString().padStart(3, '0')}秒`;
   } else {
-    return `${secs}秒`;
+    return `${secs}.${ms.toString().padStart(3, '0')}秒`;
   }
 }
 
