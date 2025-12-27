@@ -602,7 +602,9 @@ function getCertificateImageData() {
 function setupPassPageEventListenersCommon(genreName, quizResult) {
   setupCommonEventListeners({
     certificateDisplayImage: function() {
-      const imageData = getCertificateImageData();
+      // クリック時にDOM要素から直接src属性を取得
+      const imgElement = document.getElementById('certificateDisplayImage');
+      const imageData = imgElement ? imgElement.src : null;
       console.log('certificateImageData:', imageData ? 'データあり' : 'null');
       openCertificateInNewTab(imageData);
     },
