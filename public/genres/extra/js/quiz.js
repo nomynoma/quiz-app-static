@@ -199,7 +199,7 @@ function showQuestion() {
             btn.classList.add('selected');
           }
         } else {
-          // 単一選択 → エクストラステージでは即座に次の問題へ
+          // 単一選択 → エクストラステージでは正誤判定して即座に処理
           const allBtns = choicesDiv.querySelectorAll('.choice-btn');
           allBtns.forEach(b => b.classList.remove('selected'));
 
@@ -213,12 +213,9 @@ function showQuestion() {
         } else {
           userAnswers[currentQuestionIndex].answer = selectedChoices[0] || null;
 
-          // エクストラステージ: 単一選択の場合は即座に次の問題へ
+          // エクストラステージ: 単一選択の場合は正誤を即座にチェック
           stopTimer();
-          setTimeout(() => {
-            currentQuestionIndex++;
-            showQuestion();
-          }, 300); // 0.3秒後に次の問題へ
+          checkAnswerAndProceed(q, choice);
         }
 
         updateSubmitButton();
@@ -242,6 +239,39 @@ function showQuestion() {
 }
 
 // ========================================
+// 回答チェックして次へ進む（エクストラステージ専用）
+// ========================================
+function checkAnswerAndProceed(question, selectedAnswer) {
+  // 正解をチェック（correctHashを使用）
+  const userAnswerHash = generateAnswerHashClient(selectedAnswer);
+  const isCorrect = userAnswerHash === question.correctHash;
+
+  if (!isCorrect) {
+    // 不正解 → 即座に失敗画面へ
+    setTimeout(() => {
+      showFailResult();
+    }, 300);
+  } else {
+    // 正解 → 次の問題へ
+    setTimeout(() => {
+      currentQuestionIndex++;
+      showQuestion();
+    }, 300);
+  }
+}
+
+// ========================================
+// クライアント側で回答ハッシュを生成（正誤判定用）
+// ========================================
+function generateAnswerHashClient(answer) {
+  // 配列の場合はソートして結合
+  if (Array.isArray(answer)) {
+    return answer.slice().sort().join('###');
+  }
+  return String(answer);
+}
+
+// ========================================
 // タイマー開始
 // ========================================
 function startTimer() {
@@ -258,10 +288,9 @@ function startTimer() {
     updateTimerDisplay();
 
     if (remainingTime <= 0) {
-      // 時間切れ → 次の問題へ（回答なしとして記録）
+      // 時間切れ → 即座に失敗画面へ
       stopTimer();
-      currentQuestionIndex++;
-      showQuestion();
+      showFailResult();
     }
   }, 1000);
 }
@@ -413,6 +442,34 @@ async function submitAllAnswers() {
     submitBtn.disabled = false;
     submitBtn.textContent = '採点する';
   }
+}
+
+// ========================================
+// 失敗結果を即座に表示
+// ========================================
+function showFailResult() {
+  // 結果画面に切り替え
+  showScreen('resultScreen');
+
+  // ヘッダーを非表示
+  document.getElementById('progressIndicatorHeader').style.display = 'none';
+  document.getElementById('questionNumberHeader').textContent = '';
+
+  // 不合格表示
+  document.getElementById('passResult').style.display = 'none';
+  document.getElementById('failResult').style.display = 'block';
+
+  document.getElementById('failResultText').innerHTML = `
+    <div style="font-size: 48px; font-weight: bold; color: #e74c3c; margin: 20px 0;">
+      ${currentQuestionIndex} / ${questions.length}
+    </div>
+    <p style="font-size: 18px; color: #666;">
+      ${currentQuestionIndex + 1}問目で失敗しました
+    </p>
+  `;
+
+  // 誤答一覧は空にする（エクストラステージは即失敗なので詳細不要）
+  document.getElementById('wrongAnswersList').innerHTML = '';
 }
 
 // ========================================
