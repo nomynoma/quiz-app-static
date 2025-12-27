@@ -92,6 +92,14 @@ class QuizAPI {
     });
   }
 
+  // エクストラステージ専用の回答判定
+  async judgeExtraAnswers(answers, userId) {
+    return await this.post('judgeExtraAnswer', {
+      answers: answers,
+      userId: userId
+    });
+  }
+
   // 超級モード用の問題を取得
   async getUltraModeQuestions(genre, userId) {
     return await this.post('getUltraModeQuestions', {

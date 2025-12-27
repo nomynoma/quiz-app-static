@@ -430,9 +430,7 @@ async function submitAllAnswers() {
     markPerformance('judgeStart');
 
     const userId = getBrowserId();
-    const result = await quizAPI.judgeAnswers(
-      GENRE_NAME,
-      currentLevel,
+    const result = await quizAPI.judgeExtraAnswers(
       userAnswers,
       userId
     );

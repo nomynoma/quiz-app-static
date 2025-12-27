@@ -87,6 +87,10 @@ function doPost(e) {
         result = getTopChallengers(payload.genre, payload.level);
         break;
 
+      case 'judgeExtraAnswer':
+        result = judgeExtraAnswer(payload);
+        break;
+
       default:
         return jsonResponse({ error: 'Unknown action: ' + action }, 400);
     }
@@ -240,6 +244,81 @@ function judgeAllAnswers(payload) {
 
   if (Object.keys(answerMap).length === 0) {
     throw new Error('正解データが見つかりません: ' + payload.genre + ' ' + payload.level);
+  }
+
+  var results = [];
+  var wrongAnswers = [];
+
+  for (var i = 0; i < payload.answers.length; i++) {
+    var userAnswer = payload.answers[i];
+    var correctAnswer = answerMap[userAnswer.questionId];
+
+    if (correctAnswer === undefined) {
+      Logger.log('警告: 問題ID ' + userAnswer.questionId + ' の正解が見つかりません');
+      results.push(false);
+      continue;
+    }
+
+    var isCorrect = checkAnswer(userAnswer.answer, correctAnswer);
+    results.push(isCorrect);
+
+    if (!isCorrect) {
+      var hintData = hintMap[userAnswer.questionId] || {};
+      wrongAnswers.push({
+        questionNumber: i + 1,
+        question: hintData.question || '',
+        userAnswer: formatUserAnswer(userAnswer.answer),
+        hintText: hintData.hintText || '',
+        hintUrl: hintData.hintUrl || ''
+      });
+    }
+  }
+
+  return {
+    results: results,
+    wrongAnswers: wrongAnswers
+  };
+}
+
+// ========================================
+// API: judgeExtraAnswer - エクストラステージ専用採点
+// ========================================
+function judgeExtraAnswer(payload) {
+  Logger.log('judgeExtraAnswer payload: %s', JSON.stringify(payload));
+
+  if (payload.userId && !checkRateLimit(payload.userId)) {
+    throw new Error('しばらく待ってから再度お試しください');
+  }
+
+  var cache = CacheService.getScriptCache();
+  var answerMap = {};
+  var hintMap = {};
+
+  // 全ジャンル・全レベルの正解データを統合
+  for (var g = 0; g < GENRES.length; g++) {
+    var genre = GENRES[g];
+    for (var i = 0; i < LEVELS.length; i++) {
+      var level = LEVELS[i];
+      var answerCacheKey = 'a_' + genre + '_' + level;
+      var levelAnswerMap = JSON.parse(cache.get(answerCacheKey) || '{}');
+
+      // 各レベルの正解データをマージ
+      for (var questionId in levelAnswerMap) {
+        answerMap[questionId] = levelAnswerMap[questionId];
+      }
+
+      var hintCacheKey = 'h_' + genre + '_' + level;
+      var levelHintMap = JSON.parse(cache.get(hintCacheKey) || '{}');
+
+      // 各レベルのヒントデータをマージ
+      for (var questionId in levelHintMap) {
+        hintMap[questionId] = levelHintMap[questionId];
+      }
+    }
+  }
+
+  if (Object.keys(answerMap).length === 0) {
+    throw new Error('正解データが見つかりません: エクストラステージ');
   }
 
   var results = [];
