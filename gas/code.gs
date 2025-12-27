@@ -199,23 +199,47 @@ function judgeAllAnswers(payload) {
   }
 
   var cache = CacheService.getScriptCache();
-  var answerCacheKey = 'a_' + payload.genre + '_' + payload.level;
-  var answerMap = JSON.parse(cache.get(answerCacheKey) || '{}');
-
-  if (Object.keys(answerMap).length === 0) {
-    throw new Error('正解データが見つかりません: ' + answerCacheKey);
-  }
-
-  var hintCacheKey = 'h_' + payload.genre + '_' + payload.level;
+  var answerMap = {};
   var hintMap = {};
 
-  try {
-    var cachedHints = cache.get(hintCacheKey);
-    if (cachedHints) {
-      hintMap = JSON.parse(cachedHints);
+  // 超級の場合は全レベルの正解データを統合
+  if (payload.level === '超級') {
+    for (var i = 0; i < LEVELS.length; i++) {
+      var level = LEVELS[i];
+      var answerCacheKey = 'a_' + payload.genre + '_' + level;
+      var levelAnswerMap = JSON.parse(cache.get(answerCacheKey) || '{}');
+
+      // 各レベルの正解データをマージ
+      for (var questionId in levelAnswerMap) {
+        answerMap[questionId] = levelAnswerMap[questionId];
+      }
+
+      var hintCacheKey = 'h_' + payload.genre + '_' + level;
+      var levelHintMap = JSON.parse(cache.get(hintCacheKey) || '{}');
+
+      // 各レベルのヒントデータをマージ
+      for (var questionId in levelHintMap) {
+        hintMap[questionId] = levelHintMap[questionId];
+      }
     }
-  } catch (e) {
-    Logger.log('ヒント情報の取得に失敗: ' + e);
+  } else {
+    // 通常レベルの場合は単一のキャッシュから取得
+    var answerCacheKey = 'a_' + payload.genre + '_' + payload.level;
+    answerMap = JSON.parse(cache.get(answerCacheKey) || '{}');
+
+    var hintCacheKey = 'h_' + payload.genre + '_' + payload.level;
+    try {
+      var cachedHints = cache.get(hintCacheKey);
+      if (cachedHints) {
+        hintMap = JSON.parse(cachedHints);
+      }
+    } catch (e) {
+      Logger.log('ヒント情報の取得に失敗: ' + e);
+    }
+  }
+
+  if (Object.keys(answerMap).length === 0) {
+    throw new Error('正解データが見つかりません: ' + payload.genre + ' ' + payload.level);
   }
 
   var results = [];
