@@ -564,6 +564,7 @@ function saveScore(payload) {
     var score = payload.score;
     var totalQuestions = payload.totalQuestions;
     var genre = payload.genre || 'エクストラステージ';
+    var time = payload.time; // エクストラステージ用の経過時間（ミリ秒）
 
     if (!browserId || !nickname || score === undefined || totalQuestions === undefined) {
       return { success: false, error: '必須パラメータが不足しています' };
@@ -576,8 +577,8 @@ function saveScore(payload) {
 
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
-      sheet.appendRow(['browserId', 'nickname', 'score', 'timestamp', 'genre', 'isPerfect']);
-      sheet.getRange('A1:F1').setFontWeight('bold');
+      sheet.appendRow(['browserId', 'nickname', 'score', 'timestamp', 'genre', 'isPerfect', 'time']);
+      sheet.getRange('A1:G1').setFontWeight('bold');
       sheet.setFrozenRows(1);
     }
 
@@ -595,14 +596,36 @@ function saveScore(payload) {
 
     if (rowIndex > 0) {
       var existingScore = data[rowIndex - 1][2];
-      if (score > existingScore) {
+      var existingTime = data[rowIndex - 1][6] || null;
+
+      // エクストラステージの場合: スコアが高い、または同じスコアで時間が短い場合に更新
+      var shouldUpdate = false;
+      if (genre === 'エクストラステージ' && time !== undefined) {
+        if (score > existingScore) {
+          shouldUpdate = true;
+        } else if (score === existingScore && existingTime !== null && time < existingTime) {
+          shouldUpdate = true;
+        }
+      } else {
+        // 通常のジャンル: スコアが高い場合のみ更新
+        shouldUpdate = (score > existingScore);
+      }
+
+      if (shouldUpdate) {
         sheet.getRange(rowIndex, 2).setValue(nickname);
         sheet.getRange(rowIndex, 3).setValue(score);
         sheet.getRange(rowIndex, 4).setValue(timestamp);
         sheet.getRange(rowIndex, 6).setValue(isPerfectScore);
+        if (time !== undefined) {
+          sheet.getRange(rowIndex, 7).setValue(time);
+        }
       }
     } else {
-      sheet.appendRow([browserId, nickname, score, timestamp, genre, isPerfectScore]);
+      var row = [browserId, nickname, score, timestamp, genre, isPerfectScore];
+      if (time !== undefined) {
+        row.push(time);
+      }
+      sheet.appendRow(row);
     }
 
     var rankingData = getTopScores({ genre: genre, limit: 100, browserId: browserId });
@@ -658,7 +681,8 @@ function getTopScores(payload) {
           nickname: data[i][1],
           score: data[i][2],
           timestamp: data[i][3],
-          isPerfect: data[i][5] || false
+          isPerfect: data[i][5] || false,
+          time: data[i][6] || null
         };
 
         if (scoreData.isPerfect === true) {
@@ -673,27 +697,48 @@ function getTopScores(payload) {
       return new Date(a.timestamp) - new Date(b.timestamp);
     });
 
-    challengerScores.sort(function(a, b) {
-      if (b.score !== a.score) {
-        return b.score - a.score;
-      }
-      return new Date(a.timestamp) - new Date(b.timestamp);
-    });
+    // エクストラステージの場合は時間も考慮してソート
+    if (genre === 'エクストラステージ') {
+      challengerScores.sort(function(a, b) {
+        // スコアが高い方が上位
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        // スコアが同じ場合は時間が短い方が上位
+        if (a.time !== null && b.time !== null) {
+          return a.time - b.time;
+        }
+        // 時間データがない場合はタイムスタンプで判定
+        return new Date(a.timestamp) - new Date(b.timestamp);
+      });
+    } else {
+      // 通常のジャンル: スコア優先、同点ならタイムスタンプ
+      challengerScores.sort(function(a, b) {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return new Date(a.timestamp) - new Date(b.timestamp);
+      });
+    }
 
     var topChallengers = challengerScores.slice(0, limit);
 
     var hallOfFame = perfectScores.map(function(item) {
-      return {
+      var result = {
         nickname: item.nickname,
         score: item.score,
         timestamp: Utilities.formatDate(new Date(item.timestamp), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm'),
         browserId: item.browserId,
         isCurrentUser: browserId && item.browserId === browserId
       };
+      if (item.time !== null) {
+        result.time = item.time;
+      }
+      return result;
     });
 
     var rankings = topChallengers.map(function(item, index) {
-      return {
+      var result = {
         rank: index + 1,
         nickname: item.nickname,
         score: item.score,
@@ -701,6 +746,10 @@ function getTopScores(payload) {
         browserId: item.browserId,
         isCurrentUser: browserId && item.browserId === browserId
       };
+      if (item.time !== null) {
+        result.time = item.time;
+      }
+      return result;
     });
 
     return { hallOfFame: hallOfFame, rankings: rankings };
@@ -859,8 +908,8 @@ function generateAnswerHash(answer) {
     normalized = answer.toString().trim().toUpperCase();
   }
 
-  // Base64エンコードでハッシュ化
-  return Utilities.base64Encode(normalized);
+  // Base64エンコード（UTF-8対応）
+  return Utilities.base64Encode(normalized, Utilities.Charset.UTF_8);
 }
 
 function shuffleArray(array) {

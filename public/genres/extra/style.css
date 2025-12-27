@@ -125,3 +125,200 @@ body {
     transform: translateX(10px);
   }
 }
+
+/* ========================================
+   ランキング画面
+   ======================================== */
+
+.ranking-list {
+  margin: 20px 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ランキングセクション */
+.ranking-section {
+  margin-bottom: 30px;
+}
+
+.ranking-section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding: 15px 20px;
+  border-radius: 10px 10px 0 0;
+  text-align: center;
+}
+
+/* 殿堂入りセクション */
+.hall-of-fame-section .ranking-section-title {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #333;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.challenger-section {
+  margin-top: 40px;
+}
+
+.challenger-section .ranking-section-title {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.ranking-table {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eeeeee;
+  transition: background-color 0.2s ease;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-item:hover {
+  background-color: #f5f5f5;
+}
+
+.ranking-rank {
+  font-size: 18px;
+  font-weight: bold;
+  color: #666;
+  min-width: 60px;
+  text-align: center;
+}
+
+.ranking-nickname {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  padding: 0 15px;
+}
+
+.ranking-score {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1976d2;
+  min-width: 120px;
+  text-align: right;
+}
+
+/* 1位・2位・3位のスタイル */
+.ranking-item.rank-1 {
+  background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+}
+
+.ranking-item.rank-1 .ranking-rank {
+  color: #ffa500;
+  font-size: 24px;
+}
+
+.ranking-item.rank-2 {
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+}
+
+.ranking-item.rank-2 .ranking-rank {
+  color: #c0c0c0;
+  font-size: 22px;
+}
+
+.ranking-item.rank-3 {
+  background: linear-gradient(135deg, #fff5e6 0%, #ffffff 100%);
+}
+
+.ranking-item.rank-3 .ranking-rank {
+  color: #cd7f32;
+  font-size: 20px;
+}
+
+/* 殿堂入りアイテム */
+.hall-of-fame-item {
+  background: linear-gradient(135deg, #fffef0 0%, #ffffff 100%);
+  border-left: 4px solid #ffd700;
+}
+
+.hall-of-fame-item .ranking-rank {
+  font-size: 24px;
+}
+
+/* タイムスタンプ表示（殿堂入りのみ） */
+.ranking-timestamp {
+  flex: 0 0 150px;
+  text-align: right;
+  font-size: 12px;
+  color: #999;
+}
+
+/* 自分のスコアをハイライト */
+.ranking-item.current-user {
+  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+  border-left: 4px solid #1976d2;
+}
+
+.hall-of-fame-item.current-user {
+  background: linear-gradient(135deg, #fff9e6 0%, #e3f2fd 100%);
+  border-left: 4px solid #1976d2;
+}
+
+.ranking-item.current-user .ranking-nickname {
+  color: #1976d2;
+  font-weight: bold;
+}
+
+.ranking-item.current-user .ranking-nickname::after {
+  content: ' (あなた)';
+  font-size: 12px;
+  color: #1976d2;
+  font-weight: normal;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 600px) {
+  .ranking-item {
+    padding: 12px 15px;
+  }
+
+  .ranking-rank {
+    min-width: 50px;
+    font-size: 16px;
+  }
+
+  .ranking-item.rank-1 .ranking-rank {
+    font-size: 20px;
+  }
+
+  .ranking-item.rank-2 .ranking-rank {
+    font-size: 18px;
+  }
+
+  .ranking-item.rank-3 .ranking-rank {
+    font-size: 17px;
+  }
+
+  .ranking-nickname {
+    font-size: 14px;
+    padding: 0 10px;
+  }
+
+  .ranking-score {
+    font-size: 16px;
+    min-width: 70px;
+  }
+
+  .ranking-timestamp {
+    flex: 0 0 100px;
+    font-size: 10px;
+  }
+}

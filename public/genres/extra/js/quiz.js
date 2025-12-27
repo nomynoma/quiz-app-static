@@ -18,6 +18,7 @@ let userAnswers = []; // ユーザーの回答 [{questionId, answer}, ...]
 let selectedChoices = []; // 現在の問題で選択中の選択肢
 let timerInterval = null; // タイマーのインターバルID
 let remainingTime = 10; // 残り時間（秒）
+let startTime = null; // 開始時刻
 
 // ========================================
 // 初期化
@@ -83,6 +84,10 @@ async function loadQuestions() {
     }));
 
     currentQuestionIndex = 0;
+
+    // 開始時刻を記録
+    startTime = new Date();
+
     showQuestion();
 
   } catch (error) {
@@ -465,14 +470,98 @@ function showFailResult() {
   document.getElementById('passResult').style.display = 'none';
   document.getElementById('failResult').style.display = 'block';
 
-  document.getElementById('failResultText').innerHTML = `
+  // 経過時間を計算
+  const endTime = new Date();
+  const elapsedMs = endTime - startTime;
+
+  // 今回のスコア
+  const currentScore = {
+    correctCount: currentQuestionIndex,
+    time: elapsedMs
+  };
+
+  // 自己ベストを取得
+  const bestScore = getExtraBestScore();
+
+  // 自己ベストと比較
+  const isNewBest = isBetterScore(currentScore, bestScore);
+
+  // スコア表示HTML
+  let scoreHtml = `
     <div style="font-size: 48px; font-weight: bold; color: #e74c3c; margin: 20px 0;">
       ${currentQuestionIndex} / ${questions.length}
     </div>
     <p style="font-size: 18px; color: #666;">
       ${currentQuestionIndex + 1}問目で失敗しました
     </p>
+    <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+      <div style="font-size: 16px; margin-bottom: 10px;">
+        <strong>今回のスコア：</strong>${currentQuestionIndex}問（${formatTime(currentScore.time)}）
+      </div>
   `;
+
+  if (bestScore) {
+    scoreHtml += `
+      <div style="font-size: 14px; color: #666;">
+        <strong>自己ベスト：</strong>${bestScore.correctCount}問（${formatTime(bestScore.time)}）
+      </div>
+    `;
+  }
+
+  scoreHtml += `</div>`;
+
+  if (isNewBest) {
+    scoreHtml += `
+      <div style="margin: 15px 0;">
+        <p style="color: #27ae60; font-weight: bold;">🎉 自己ベスト更新！</p>
+        <button id="saveBestScoreBtn" class="btn" style="margin-top: 10px;">最高スコアとして登録する</button>
+      </div>
+    `;
+  }
+
+  document.getElementById('failResultText').innerHTML = scoreHtml;
+
+  // 最高スコア登録ボタンのイベントリスナー
+  if (isNewBest) {
+    const saveBestScoreBtn = document.getElementById('saveBestScoreBtn');
+    if (saveBestScoreBtn) {
+      saveBestScoreBtn.onclick = async function() {
+        saveBestScoreBtn.disabled = true;
+        saveBestScoreBtn.textContent = '登録中...';
+
+        // LocalStorageに保存
+        saveExtraBestScore(currentScore);
+
+        // GASにも登録
+        try {
+          const browserId = getBrowserId();
+          const nickname = getNickname();
+
+          // エクストラステージ用のAPI呼び出し（時間データも送信）
+          const payload = {
+            browserId: browserId,
+            nickname: nickname,
+            score: currentScore.correctCount,
+            totalQuestions: questions.length,
+            genre: 'エクストラステージ',
+            time: currentScore.time
+          };
+
+          const result = await quizAPI.post('saveScore', payload);
+
+          if (result.success) {
+            saveBestScoreBtn.textContent = '登録しました！';
+          } else {
+            saveBestScoreBtn.textContent = '登録失敗';
+            console.error('スコア登録エラー:', result.error);
+          }
+        } catch (error) {
+          saveBestScoreBtn.textContent = '登録失敗';
+          console.error('スコア登録エラー:', error);
+        }
+      };
+    }
+  }
 
   // 誤答一覧は空にする（エクストラステージは即失敗なので詳細不要）
   document.getElementById('wrongAnswersList').innerHTML = '';
@@ -548,3 +637,60 @@ function shareFailToX() {
 }
 
 // retryLevel(), backToGenreSelection(), showScreen() は common.js に移動済み
+
+// ========================================
+// エクストラステージ自己ベスト管理
+// ========================================
+
+// 経過時間を日本語形式に変換（HH時間MM分SS秒）
+function formatTime(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  let result = '';
+  if (hours > 0) {
+    result += `${hours}時間`;
+  }
+  if (minutes > 0 || hours > 0) {
+    result += `${minutes}分`;
+  }
+  result += `${seconds}秒`;
+
+  return result;
+}
+
+// 自己ベストを取得
+function getExtraBestScore() {
+  try {
+    const stored = localStorage.getItem('extraBestScore');
+    if (!stored) return null;
+    return JSON.parse(stored);
+  } catch (e) {
+    console.error('自己ベスト取得エラー:', e);
+    return null;
+  }
+}
+
+// 自己ベストを保存
+function saveExtraBestScore(score) {
+  try {
+    localStorage.setItem('extraBestScore', JSON.stringify(score));
+    console.log('自己ベストを保存しました:', score);
+  } catch (e) {
+    console.error('自己ベスト保存エラー:', e);
+  }
+}
+
+// スコア比較（currentがbestより良ければtrue）
+function isBetterScore(current, best) {
+  if (!best) return true; // 自己ベストがない場合は更新
+
+  // 正解数が多い方が良い
+  if (current.correctCount > best.correctCount) return true;
+  if (current.correctCount < best.correctCount) return false;
+
+  // 正解数が同じ場合は時間が短い方が良い
+  return current.time < best.time;
+}
