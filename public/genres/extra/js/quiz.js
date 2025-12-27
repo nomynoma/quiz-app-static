@@ -62,11 +62,17 @@ document.addEventListener('DOMContentLoaded', function() {
 // 問題読み込み
 // ========================================
 async function loadQuestions() {
+  console.log('[DEBUG] extra loadQuestions called');
+  console.log('[DEBUG] GENRE_NAME:', GENRE_NAME);
+  console.log('[DEBUG] currentLevel:', currentLevel);
+
   showScreen('loading');
 
   try {
     // 共通API呼び出し
     questions = await loadQuestionsCommon(GENRE_NAME, currentLevel);
+
+    console.log('[DEBUG] questions received:', questions);
 
     if (!questions || questions.length === 0) {
       alert('問題の取得に失敗しました。');
@@ -84,7 +90,8 @@ async function loadQuestions() {
     showQuestion();
 
   } catch (error) {
-    console.error('問題読み込みエラー:', error);
+    console.error('[DEBUG] 問題読み込みエラー:', error);
+    console.error('[DEBUG] エラー詳細:', error.stack);
     alert('問題の読み込みに失敗しました: ' + error.message);
     backToGenreSelection();
   }

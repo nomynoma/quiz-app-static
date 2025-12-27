@@ -698,6 +698,7 @@ function updateNextLevelButton(quizResult) {
  * @returns {Promise<Array>} 問題配列
  */
 async function loadQuestionsCommon(genreName, currentLevel) {
+  console.log('[DEBUG] loadQuestionsCommon called:', { genreName, currentLevel });
   markPerformance('loadStart');
 
   const userId = getBrowserId();
@@ -705,14 +706,18 @@ async function loadQuestionsCommon(genreName, currentLevel) {
   let questions;
   // エクストラステージの判定
   if (genreName === 'エクストラステージ') {
+    console.log('[DEBUG] エクストラステージモードで問題取得');
     questions = await quizAPI.getExtraModeQuestions(userId);
   } else if (currentLevel === '超級') {
     // 超級モードの判定
+    console.log('[DEBUG] 超級モードで問題取得');
     questions = await quizAPI.getUltraModeQuestions(genreName, userId);
   } else {
+    console.log('[DEBUG] 通常モードで問題取得');
     questions = await quizAPI.getQuestions(genreName, currentLevel, userId);
   }
 
+  console.log('[DEBUG] 取得した問題数:', questions?.length || 0);
   markPerformance('loadEnd');
   measurePerformance('loadStart', 'loadEnd');
 
