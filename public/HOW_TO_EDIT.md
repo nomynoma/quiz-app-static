@@ -9,6 +9,8 @@
 - [HTMLの編集方法](#htmlの編集方法)
 - [CSSの編集方法](#cssの編集方法)
 - [JavaScriptの編集方法](#javascriptの編集方法)
+- [合格証のカスタマイズ](#合格証のカスタマイズ)
+- [エクストラステージのカスタマイズ](#エクストラステージのカスタマイズ)
 - [新しいジャンルの追加](#新しいジャンルの追加)
 
 ---
@@ -31,10 +33,17 @@ public/genres/genre1/
 共通ファイル（**全ジャンル共通なので注意して編集**）：
 
 ```
-public/js/
-├── common.js          # 共通関数（慎重に編集）
-├── api.js             # API通信処理
-└── config.js          # 設定ファイル
+public/
+├── js/
+│   ├── common.js          # 共通関数（慎重に編集）
+│   ├── api.js             # API通信処理
+│   ├── config.js          # 設定ファイル
+│   └── genre-select.js    # ジャンル選択画面（合格証モーダル含む）
+├── css/
+│   ├── style.css          # 共通スタイル
+│   └── genre-select.css   # ジャンル選択画面スタイル（合格証含む）
+└── imgs/
+    └── certificates/      # 合格証背景画像（frame_hyousyoujyou_*.jpg）
 ```
 
 ---
@@ -259,6 +268,203 @@ function showQuestion() {
 
 ---
 
+## 合格証のカスタマイズ
+
+### 📸 合格証の仕組み
+
+合格証は以下の要素で構成されています：
+
+1. **背景画像**: `public/imgs/certificates/frame_hyousyoujyou_{ジャンル番号}-{レベル番号}.jpg`
+2. **テキスト**: ニックネーム、ジャンル名、レベル名、取得日（CSSでスタイリング）
+3. **生成**: html2canvasライブラリでJPEG形式（品質90%）に変換
+
+### 🎨 合格証の配色をカスタマイズする
+
+各ジャンルの合格証テキスト色は `public/css/genre-select.css` で設定されています。
+
+```css
+/* ジャンル1の合格証 - 青系 */
+.certificate-genre1 .certificate-title,
+.certificate-genre1 .certificate-name,
+.certificate-genre1 .certificate-body,
+.certificate-genre1 .certificate-date {
+  color: #2563eb; /* 青色 */
+}
+
+/* ジャンル2の合格証 - 緑系 */
+.certificate-genre2 .certificate-title,
+.certificate-genre2 .certificate-name,
+.certificate-genre2 .certificate-body,
+.certificate-genre2 .certificate-date {
+  color: #059669; /* 緑色 */
+}
+```
+
+**カスタマイズ例**: ジャンル1の合格証を赤系に変更
+
+```css
+.certificate-genre1 .certificate-title,
+.certificate-genre1 .certificate-name,
+.certificate-genre1 .certificate-body,
+.certificate-genre1 .certificate-date {
+  color: #dc2626; /* 赤色 */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* 影を追加 */
+}
+```
+
+### 🖼️ 合格証背景画像を変更する
+
+背景画像は `public/imgs/certificates/` に配置されています。
+
+**ファイル命名規則**:
+- 通常レベル: `frame_hyousyoujyou_{ジャンル番号}-{レベル番号}.jpg`
+  - 例: `frame_hyousyoujyou_1-1.jpg` → ジャンル1・初級
+  - 例: `frame_hyousyoujyou_1-4.jpg` → ジャンル1・超級
+- エクストラステージ: `frame_hyousyoujyou_ALL.jpg` または `frame_hyousyoujyou_1-1.jpg` が使用されます
+
+**推奨サイズ**: 800px × 565px（4:3比率）
+
+### 🏅 合格証モーダルのカスタマイズ
+
+合格証モーダルは `public/js/genre-select.js` の `openCertificateModal()` 関数で制御されています。
+
+**モーダルデザインの変更**:
+
+```css
+/* public/css/genre-select.css */
+
+/* モーダル背景色を変更 */
+.certificate-modal {
+  background-color: rgba(0, 0, 0, 0.9); /* より暗く */
+}
+
+/* モーダルコンテンツのサイズを変更 */
+.certificate-modal-content {
+  max-width: 900px; /* より大きく */
+  border-radius: 20px; /* より丸く */
+}
+
+/* ダウンロードボタンの色を変更 */
+.certificate-modal-content .btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+```
+
+### 📱 合格証のファイル名形式
+
+ダウンロードされる合格証のファイル名は以下の形式です：
+
+```
+合格証_{ニックネーム}_{ジャンル名}_{レベル名}.jpg
+```
+
+例:
+- `合格証_太郎_ジャンル1_初級.jpg`
+- `合格証_花子_ジャンル2_超級.jpg`
+- `合格証_次郎_エクストラステージ_エクストラ.jpg`
+
+**ファイル名をカスタマイズする場合**:
+
+各ジャンルの `js/pass.js` の `downloadCertificate()` 関数を編集します。
+
+```javascript
+// genre1/js/pass.js
+
+// ファイル名を英語表記に変更する例
+const fileName = `Certificate_${metadata.nickname}_${GENRE_NAME}_${quizResult.level}.jpg`;
+```
+
+---
+
+## エクストラステージのカスタマイズ
+
+### 🌟 エクストラステージの仕組み
+
+エクストラステージは以下の特徴を持っています：
+
+1. **解放条件**: 全6ジャンルの上級（3級）をクリア
+2. **出題内容**: 全ジャンル・全レベルから10問ランダム出題
+3. **特典**: 全問正解で「殿堂入り」、クリアタイムがランキングに記録
+
+### 📂 エクストラステージのファイル構成
+
+```
+public/genres/extra/
+├── quiz.html          # エクストラステージのクイズページ
+├── pass.html          # エクストラステージの合格証ページ
+├── style.css          # エクストラステージのスタイル
+├── pass.css           # 合格証ページのスタイル
+└── js/
+    ├── quiz.js        # エクストラステージのロジック
+    └── pass.js        # 合格証ページのロジック
+```
+
+### 🎨 エクストラステージの見た目をカスタマイズ
+
+**背景色を変更**:
+
+```css
+/* genres/extra/style.css */
+
+body {
+  background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%); /* ゴールド→青グラデーション */
+}
+```
+
+**ボタンの色を変更**:
+
+```css
+/* genres/extra/style.css */
+
+.btn {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); /* ピンクグラデーション */
+}
+```
+
+### 🏆 ランキング画面のカスタマイズ
+
+ランキング画面は `public/score.html` と `public/css/score.css` で定義されています。
+
+**殿堂入りセクションの色を変更**:
+
+```css
+/* public/css/score.css */
+
+.hall-of-fame-section {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+```
+
+**TOP10ランキングテーブルのスタイル変更**:
+
+```css
+/* public/css/score.css */
+
+.ranking-table th {
+  background-color: #dc2626; /* 赤色 */
+}
+
+.ranking-table tr:hover {
+  background-color: #fef3c7; /* ホバー時に黄色 */
+}
+```
+
+### 🔧 エクストラステージの問題数を変更
+
+エクストラステージの問題数は `public/genres/extra/js/quiz.js` で設定されています。
+
+```javascript
+// genres/extra/js/quiz.js
+
+const GENRE_NUMBER = 7;         // 固定（エクストラステージ = 7）
+const GENRE_NAME = 'エクストラステージ'; // 固定
+const EXTRA_QUESTION_COUNT = 10; // ★ここを変更（例: 20問に増やす）
+```
+
+**注意**: 問題数を変更すると、合格基準も変更する必要がある場合があります。
+
+---
+
 ## 新しいジャンルの追加
 
 ### 1. ジャンルフォルダをコピー
@@ -286,21 +492,61 @@ const GENRE_NUMBER = 7;
 const GENRE_NAME = 'ジャンル7';
 ```
 
-### 3. ジャンル選択画面に追加
+### 3. ジャンル名を config.js に追加
 
-`public/genre-select.html` を編集して、新しいジャンルへのリンクを追加します。
+`public/js/config.js` の `GENRE_NAMES` 配列に新しいジャンル名を追加します。
 
-```html
-<!-- genre-select.html -->
-<div class="genre-card" data-genre="7">
-  <div class="genre-title">ジャンル7</div>
-  <div class="genre-description">新しいジャンルの説明</div>
-</div>
+```javascript
+// public/js/config.js
+
+const GENRE_NAMES = [
+  'ジャンル1',
+  'ジャンル2',
+  'ジャンル3',
+  'ジャンル4',
+  'ジャンル5',
+  'ジャンル6',
+  'ジャンル7', // ★追加
+];
 ```
 
-### 4. CSS・HTMLをカスタマイズ
+ジャンル選択画面（`public/genre-select.html`）は自動的に新しいジャンルを表示します。
+
+### 4. 合格証背景画像を追加
+
+新しいジャンルの合格証背景画像を `public/imgs/certificates/` に追加します。
+
+```
+public/imgs/certificates/
+├── frame_hyousyoujyou_7-1.jpg  # ジャンル7・初級
+├── frame_hyousyoujyou_7-2.jpg  # ジャンル7・中級
+├── frame_hyousyoujyou_7-3.jpg  # ジャンル7・上級
+└── frame_hyousyoujyou_7-4.jpg  # ジャンル7・超級
+```
+
+### 5. 合格証のCSSを追加
+
+`public/css/genre-select.css` に新しいジャンルの合格証スタイルを追加します。
+
+```css
+/* public/css/genre-select.css */
+
+/* ジャンル7の合格証 - 紫系 */
+.certificate-genre7 .certificate-title,
+.certificate-genre7 .certificate-name,
+.certificate-genre7 .certificate-body,
+.certificate-genre7 .certificate-date {
+  color: #7c3aed; /* 紫色 */
+}
+```
+
+### 6. CSS・HTMLをカスタマイズ
 
 新しいジャンルの見た目や動作を自由にカスタマイズしてください。
+
+### 7. 問題データを追加
+
+新しいジャンルの問題データをGoogle Apps Scriptまたはローカルファイルに追加します。詳細は各プロジェクトの設定に従ってください。
 
 ---
 
@@ -318,11 +564,39 @@ const GENRE_NAME = 'ジャンル7';
 2. 対象の画面要素に `id` が正しく設定されているか確認
 3. CSS で `display: none` が適用されていないか確認
 
+### 合格証モーダルで画像が表示されない
+
+1. html2canvasライブラリが読み込まれているか確認
+   - `public/genre-select.html` で `<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>` が読み込まれているか確認
+2. `public/css/genre-select.css` が読み込まれているか確認
+3. 背景画像のパスが正しいか確認
+   - `public/js/genre-select.js` の `generateCertificateForModal()` 関数で相対パス変換が正しく行われているか確認
+4. ブラウザのコンソールでエラーを確認
+
+### 超級モードが表示されない
+
+1. 上級（3級）の合格証が保存されているか確認
+   - ブラウザのlocalStorageで `cert_{ジャンル番号}-3` のキーが存在するか確認
+2. `public/js/genre-select.js` の `createUltraButton()` 関数が正しく動作しているか確認
+
+### エクストラステージが表示されない
+
+1. 全6ジャンルの上級（3級）をクリアしているか確認
+2. `public/js/genre-select.js` の `initializeExtraStageButton()` 関数が正しく動作しているか確認
+3. ブラウザのコンソールでエラーを確認
+
+### ランキングが表示されない
+
+1. エクストラステージに1回でも挑戦しているか確認（ブラウザIDが生成されている必要がある）
+2. `public/js/config.js` の `GAS_API_ENDPOINT` が正しく設定されているか確認
+3. Google Apps ScriptのAPI側でランキングデータが正しく返されているか確認
+
 ### API通信がうまくいかない
 
 1. `public/js/config.js` の `GAS_API_ENDPOINT` が正しいか確認
 2. ブラウザのコンソールでエラーメッセージを確認
 3. `public/js/api.js` のエラーハンドリングを確認
+4. Google Apps Scriptのデプロイが最新版になっているか確認
 
 ---
 
