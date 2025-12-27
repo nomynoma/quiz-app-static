@@ -783,9 +783,10 @@ async function generateCertificateCommon(genreNumber, genreName, quizResult) {
       document.getElementById('certificateDisplayImage').src = imageData;
 
       // リンクにもセット（クリックで別タブ表示）
+      // base64をBlobURLに変換して設定
       const certLink = document.getElementById('certificateLink');
       if (certLink) {
-        certLink.href = imageData;
+        certLink.href = base64ToBlobUrl(imageData);
       }
 
       // メタデータを保存
@@ -805,4 +806,25 @@ async function generateCertificateCommon(genreNumber, genreName, quizResult) {
     alert('合格証背景画像の読み込みに失敗しました。');
     showScreen('certificateScreen');
   };
+}
+
+/**
+ * base64データURLをBlobURLに変換する
+ * @param {string} base64DataUrl - base64形式のデータURL
+ * @returns {string} BlobURL
+ */
+function base64ToBlobUrl(base64DataUrl) {
+  const [meta, base64] = base64DataUrl.split(',');
+  const mime = meta.match(/data:(.*?);base64/)[1];
+
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  const blob = new Blob([bytes], { type: mime });
+  return URL.createObjectURL(blob);
 }
