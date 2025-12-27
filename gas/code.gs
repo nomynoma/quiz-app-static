@@ -628,6 +628,9 @@ function saveScore(payload) {
       sheet.appendRow(row);
     }
 
+    // キャッシュをクリア（スコア登録時に最新データに更新）
+    clearRankingCache();
+
     var rankingData = getTopScores({ genre: genre, limit: 100, browserId: browserId });
     var rank = -1;
     var isHallOfFame = isPerfectScore;
@@ -944,6 +947,17 @@ function formatDate(date) {
 // ========================================
 function getHallOfFame() {
   try {
+    var cache = CacheService.getScriptCache();
+    var cacheKey = 'hallOfFame';
+
+    // キャッシュから取得を試みる
+    var cached = cache.get(cacheKey);
+    if (cached) {
+      Logger.log('getHallOfFame: キャッシュから取得');
+      return JSON.parse(cached);
+    }
+
+    Logger.log('getHallOfFame: データベースから取得');
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('スコアランキング');
 
@@ -986,7 +1000,12 @@ function getHallOfFame() {
       return new Date(a.timestamp) - new Date(b.timestamp);
     });
 
-    return { hallOfFame: hallOfFameList };
+    var result = { hallOfFame: hallOfFameList };
+
+    // キャッシュに保存（600秒 = 10分）
+    cache.put(cacheKey, JSON.stringify(result), 600);
+
+    return result;
 
   } catch (error) {
     Logger.log('getHallOfFame エラー: ' + error);
@@ -999,6 +1018,17 @@ function getHallOfFame() {
 // ========================================
 function getTopChallengers(genre, level) {
   try {
+    var cache = CacheService.getScriptCache();
+    var cacheKey = 'topChallengers_' + genre + '_' + level;
+
+    // キャッシュから取得を試みる
+    var cached = cache.get(cacheKey);
+    if (cached) {
+      Logger.log('getTopChallengers: キャッシュから取得 (' + genre + ' ' + level + ')');
+      return JSON.parse(cached);
+    }
+
+    Logger.log('getTopChallengers: データベースから取得 (' + genre + ' ' + level + ')');
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('スコアランキング');
 
@@ -1057,11 +1087,16 @@ function getTopChallengers(genre, level) {
     // TOP10だけ取得
     var top10 = challengersList.slice(0, 10);
 
-    return {
+    var result = {
       genre: genre,
       level: level,
       topChallengers: top10
     };
+
+    // キャッシュに保存（600秒 = 10分）
+    cache.put(cacheKey, JSON.stringify(result), 600);
+
+    return result;
 
   } catch (error) {
     Logger.log('getTopChallengers エラー: ' + error);
@@ -1071,5 +1106,32 @@ function getTopChallengers(genre, level) {
       topChallengers: [],
       error: error.toString()
     };
+  }
+}
+
+// ========================================
+// ユーティリティ: ランキングキャッシュをクリア
+// ========================================
+function clearRankingCache() {
+  try {
+    var cache = CacheService.getScriptCache();
+
+    // 殿堂入りキャッシュをクリア
+    cache.remove('hallOfFame');
+
+    // TOP10挑戦者キャッシュをクリア（全ジャンル×全レベル）
+    var genres = GENRES;
+    var levels = LEVELS;
+
+    for (var i = 0; i < genres.length; i++) {
+      for (var j = 0; j < levels.length; j++) {
+        var cacheKey = 'topChallengers_' + genres[i] + '_' + levels[j];
+        cache.remove(cacheKey);
+      }
+    }
+
+    Logger.log('ランキングキャッシュをクリアしました');
+  } catch (error) {
+    Logger.log('clearRankingCache エラー: ' + error);
   }
 }
